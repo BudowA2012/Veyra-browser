@@ -1,0 +1,130 @@
+QMainWindow{
+    background:#0b0c10;
+}
+
+QWidget{
+    background:#0b0c10;
+    color:#eceef5;
+    font-family:"Segoe UI";
+    font-size:14px;
+}
+
+/* ================= NAVIGATION ================= */
+
+#NavigationBar{
+    background:#12141b;
+    border-bottom:1px solid #232633;
+    padding:6px;
+}
+
+QPushButton{
+    background:transparent;
+    border:none;
+    border-radius:12px;
+    color:#a9acb8;
+    min-width:38px;
+    min-height:38px;
+}
+
+QPushButton:hover{
+    background:#1d2130;
+    color:white;
+}
+
+QPushButton:pressed{
+    background:#282d40;
+}
+
+/* ================= ADDRESS BAR ================= */
+
+QLineEdit{
+    background:#171b26;
+    border:1px solid #2b3040;
+    border-radius:22px;
+    padding:10px 18px;
+    color:white;
+    selection-background-color:#7c5cff;
+}
+
+QLineEdit:focus{
+    border:1px solid #7c5cff;
+}
+
+/* ================= TABS ================= */
+
+QTabWidget::pane{
+    border:none;
+}
+
+QTabBar{
+    background:#12141b;
+}
+
+QTabBar::tab{
+    background:#171b26;
+    color:#8f93a2;
+    padding:10px 18px;
+    border-radius:10px;
+    margin:4px;
+}
+
+QTabBar::tab:selected{
+    background:#23283a;
+    color:white;
+}
+
+QTabBar::tab:hover{
+    background:#1d2130;
+}
+
+/* ================= NEW TAB ================= */
+
+#VeyraLogo{
+    font-size:72px;
+    font-weight:700;
+    color:white;
+}
+
+#VeyraSubtitle{
+    font-size:18px;
+    color:#8d91a3;
+}
+
+#NewTabSearchContainer{
+    background:#171b26;
+    border:1px solid #2b3040;
+    border-radius:30px;
+}
+
+#NewTabSearch{
+    background:transparent;
+    border:none;
+    font-size:17px;
+}
+
+#NewTabSearchButton{
+    background:#7c5cff;
+    color:white;
+    border-radius:20px;
+}
+
+#NewTabSearchButton:hover{
+    background:#9178ff;
+}
+
+/* ================= SHORTCUTS ================= */
+
+#ShortcutButton{
+    background:#171b26;
+    border:1px solid #2b3040;
+    border-radius:16px;
+    padding:14px;
+    min-width:130px;
+    min-height:80px;
+    text-align:left;
+}
+
+#ShortcutButton:hover{
+    background:#20253a;
+    border:1px solid #7c5cff;
+}
