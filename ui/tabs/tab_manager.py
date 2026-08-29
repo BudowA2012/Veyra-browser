@@ -1,11 +1,10 @@
-from PySide6.QtCore import QUrl
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QTabWidget
 
 from ui.new_tab.new_tab_page import NewTabPage
 
 
 class TabManager:
-    """Creates, manages and closes browser tabs."""
 
     def __init__(
         self,
@@ -17,97 +16,289 @@ class TabManager:
         self.browser_manager = browser_manager
         self.parent = parent
 
-        self.tabs.tabCloseRequested.connect(
-            self.close_tab
+    # ==================================================
+    # NEW TAB
+    # ==================================================
+
+    def create_new_tab_page(self):
+
+        page = NewTabPage(
+            parent=self.tabs
         )
 
-    def create_tab(
-        self,
-        url: str = "https://www.google.com",
-    ) -> int:
-
-        browser = self.browser_manager.create_browser()
-
-        index = self.tabs.addTab(
-            browser,
-            "New Tab",
+        page.search_requested.connect(
+            lambda text, page=page:
+            self.navigate_widget(
+                page,
+                text,
+            )
         )
 
-        self.tabs.setCurrentIndex(index)
-
-        browser.setUrl(QUrl(url))
-
-        browser.titleChanged.connect(
-            lambda title, browser=browser:
-            self._update_title(browser, title)
+        page.shortcut_requested.connect(
+            lambda text, page=page:
+            self.navigate_widget(
+                page,
+                text,
+            )
         )
-
-        browser.iconChanged.connect(
-            lambda icon, browser=browser:
-            self._update_icon(browser, icon)
-        )
-
-        return index
-
-    def create_new_tab_page(self) -> int:
-
-        page = NewTabPage()
 
         index = self.tabs.addTab(
             page,
             "New Tab",
         )
 
-        self.tabs.setCurrentIndex(index)
+        self.tabs.setCurrentIndex(
+            index
+        )
 
         return index
 
-    def close_tab(self, index: int):
+    # ==================================================
+    # BROWSER
+    # ==================================================
 
-        if index < 0 or index >= self.tabs.count():
+    def create_browser(self):
+
+        browser = (
+            self.browser_manager.create_browser()
+        )
+
+        self._connect_browser(
+            browser
+        )
+
+        return browser
+
+    def create_browser_tab(
+        self,
+        url=None,
+    ):
+
+        browser = self.create_browser()
+
+        index = self.tabs.addTab(
+            browser,
+            "New Tab",
+        )
+
+        self.tabs.setCurrentIndex(
+            index
+        )
+
+        if url:
+
+            self.browser_manager.load_url(
+                browser,
+                url,
+            )
+
+        return index
+
+    # ==================================================
+    # NAVIGATION
+    # ==================================================
+
+    def navigate_current(
+        self,
+        text,
+    ):
+
+        widget = (
+            self.tabs.currentWidget()
+        )
+
+        if widget is None:
             return
 
-        widget = self.tabs.widget(index)
+        self.navigate_widget(
+            widget,
+            text,
+        )
 
-        self.tabs.removeTab(index)
+    def navigate_widget(
+        self,
+        widget,
+        text,
+    ):
 
-        if widget:
-            widget.deleteLater()
+        text = str(text).strip()
 
-        if self.tabs.count() == 0:
-            self.create_new_tab_page()
+        if not text:
+            return
+
+        # ----------------------------------------------
+        # Już jesteśmy na stronie WWW
+        # ----------------------------------------------
+
+        if isinstance(
+            widget,
+            QWebEngineView,
+        ):
+
+            self.browser_manager.load_url(
+                widget,
+                text,
+            )
+
+            return
+
+        # ----------------------------------------------
+        # NEW TAB -> BROWSER
+        #
+        # Zachowujemy TEN SAM INDEX.
+        # Nie tworzymy karty na końcu.
+        # ----------------------------------------------
+
+        index = self.tabs.indexOf(
+            widget
+        )
+
+        if index < 0:
+            return
+
+        current_index = (
+            self.tabs.currentIndex()
+        )
+
+        browser = self.create_browser()
+
+        # Na chwilę blokujemy redraw,
+        # dzięki czemu przejście nie miga.
+        self.tabs.setUpdatesEnabled(
+            False
+        )
+
+        self.tabs.removeTab(
+            index
+        )
+
+        self.tabs.insertTab(
+            index,
+            browser,
+            "New Tab",
+        )
+
+        if current_index == index:
+
+            self.tabs.setCurrentIndex(
+                index
+            )
+
+        self.tabs.setUpdatesEnabled(
+            True
+        )
+
+        self.tabs.update()
+
+        widget.deleteLater()
+
+        # Dopiero po podmianie zaczynamy ładowanie.
+        self.browser_manager.load_url(
+            browser,
+            text,
+        )
+
+    # ==================================================
+    # BROWSER SIGNALS
+    # ==================================================
+
+    def _connect_browser(
+        self,
+        browser,
+    ):
+
+        browser.titleChanged.connect(
+            lambda title, browser=browser:
+            self._update_title(
+                browser,
+                title,
+            )
+        )
+
+        browser.iconChanged.connect(
+            lambda icon, browser=browser:
+            self._update_icon(
+                browser,
+                icon,
+            )
+        )
+
+    # ==================================================
+    # CURRENT BROWSER
+    # ==================================================
 
     def current_browser(self):
 
-        widget = self.tabs.currentWidget()
+        widget = (
+            self.tabs.currentWidget()
+        )
 
-        if isinstance(widget, NewTabPage):
-            return None
+        if isinstance(
+            widget,
+            QWebEngineView,
+        ):
 
-        return widget
+            return widget
 
-    def current_widget(self):
+        return None
 
-        return self.tabs.currentWidget()
+    # ==================================================
+    # CLOSE
+    # ==================================================
+
+    def close_tab(
+        self,
+        index,
+    ):
+
+        if index < 0:
+            return
+
+        widget = self.tabs.widget(
+            index
+        )
+
+        self.tabs.removeTab(
+            index
+        )
+
+        if widget:
+
+            widget.deleteLater()
+
+        if self.tabs.count() == 0:
+
+            self.create_new_tab_page()
+
+    # ==================================================
+    # TITLE
+    # ==================================================
 
     def _update_title(
         self,
         browser,
-        title: str,
+        title,
     ):
 
-        index = self.tabs.indexOf(browser)
+        index = self.tabs.indexOf(
+            browser
+        )
 
-        if index == -1:
+        if index < 0:
             return
 
         if not title:
+
             title = "New Tab"
 
         self.tabs.setTabText(
             index,
-            title[:24],
+            title[:28],
         )
+
+    # ==================================================
+    # ICON
+    # ==================================================
 
     def _update_icon(
         self,
@@ -115,14 +306,17 @@ class TabManager:
         icon,
     ):
 
-        index = self.tabs.indexOf(browser)
+        index = self.tabs.indexOf(
+            browser
+        )
 
-        if index == -1:
+        if index < 0:
             return
 
-        if not icon.isNull():
+        if icon.isNull():
+            return
 
-            self.tabs.setTabIcon(
-                index,
-                icon,
-            )
+        self.tabs.setTabIcon(
+            index,
+            icon,
+        )
