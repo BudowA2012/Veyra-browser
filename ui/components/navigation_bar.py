@@ -9,6 +9,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ui.components.icon_factory import (
+    create_icon,
+)
+
 
 class NavigationBar(QWidget):
 
@@ -49,44 +53,52 @@ class NavigationBar(QWidget):
         )
 
         # ==================================================
-        # NAV BUTTONS
+        # BACK
         # ==================================================
 
-        self.back_button = QPushButton(
-            "‹"
-        )
+        self.back_button = QPushButton()
 
-        self.forward_button = QPushButton(
-            "›"
-        )
-
-        self.reload_button = QPushButton(
-            "↻"
-        )
-
-        self.home_button = QPushButton(
-            "⌂"
-        )
-
-        for button in (
+        self._prepare_button(
             self.back_button,
+            "back",
+            "Back",
+        )
+
+        # ==================================================
+        # FORWARD
+        # ==================================================
+
+        self.forward_button = QPushButton()
+
+        self._prepare_button(
             self.forward_button,
+            "forward",
+            "Forward",
+        )
+
+        # ==================================================
+        # RELOAD
+        # ==================================================
+
+        self.reload_button = QPushButton()
+
+        self._prepare_button(
             self.reload_button,
+            "reload",
+            "Reload",
+        )
+
+        # ==================================================
+        # HOME
+        # ==================================================
+
+        self.home_button = QPushButton()
+
+        self._prepare_button(
             self.home_button,
-        ):
-
-            button.setObjectName(
-                "NavigationButton"
-            )
-
-            button.setFixedSize(
-                36,
-                36,
-            )
-
-            button.setCursor(
-                Qt.CursorShape.PointingHandCursor
-            )
+            "home",
+            "Home",
+        )
 
         # ==================================================
         # ADDRESS BAR
@@ -107,28 +119,15 @@ class NavigationBar(QWidget):
         )
 
         # ==================================================
-        # QR BUTTON
+        # QR
         # ==================================================
 
-        self.qr_button = QPushButton(
-            "QR"
-        )
+        self.qr_button = QPushButton()
 
-        self.qr_button.setObjectName(
-            "NavigationButton"
-        )
-
-        self.qr_button.setFixedSize(
-            36,
-            36,
-        )
-
-        self.qr_button.setToolTip(
-            "Create QR code for this page"
-        )
-
-        self.qr_button.setCursor(
-            Qt.CursorShape.PointingHandCursor
+        self._prepare_button(
+            self.qr_button,
+            "qr",
+            "Create QR code",
         )
 
         # ==================================================
@@ -188,9 +187,49 @@ class NavigationBar(QWidget):
             self.qr_requested.emit
         )
 
-    # ==================================================
+    # ======================================================
+    # BUTTON
+    # ======================================================
+
+    def _prepare_button(
+        self,
+        button,
+        icon_name,
+        tooltip,
+    ):
+
+        button.setObjectName(
+            "NavigationButton"
+        )
+
+        button.setFixedSize(
+            36,
+            36,
+        )
+
+        button.setIcon(
+            create_icon(
+                icon_name,
+                20,
+            )
+        )
+
+        button.setIconSize(
+            button.size()
+            * 0.55
+        )
+
+        button.setToolTip(
+            tooltip
+        )
+
+        button.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
+
+    # ======================================================
     # ADDRESS
-    # ==================================================
+    # ======================================================
 
     def _address_submitted(
         self,

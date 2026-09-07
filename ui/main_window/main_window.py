@@ -8,7 +8,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QMainWindow,
     QProgressBar,
-    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -47,11 +46,11 @@ from ui.sidebar.sidebar import (
 from ui.styles.style_manager import (
     apply_theme,
 )
-from ui.tabs.tab_bar import (
-    TabBar,
-)
 from ui.tabs.tab_manager import (
     TabManager,
+)
+from ui.tabs.tab_widget import (
+    VeyraTabWidget,
 )
 
 
@@ -137,27 +136,15 @@ class MainWindow(QMainWindow):
         self.loading_bar.hide()
 
         # ==================================================
-        # TABS
+        # NEW TAB SYSTEM
         # ==================================================
 
-        self.tab_bar = TabBar()
-
-        self.tabs = QTabWidget()
-
-        self.tabs.setTabBar(
-            self.tab_bar
+        self.tabs = (
+            VeyraTabWidget()
         )
 
-        self.tabs.setTabsClosable(
-            True
-        )
-
-        self.tabs.setMovable(
-            True
-        )
-
-        self.tabs.setDocumentMode(
-            True
+        self.tab_bar = (
+            self.tabs.tab_bar
         )
 
         self.tab_manager = (
@@ -290,7 +277,7 @@ class MainWindow(QMainWindow):
             self.tab_manager.close_tab
         )
 
-        self.tab_bar.new_tab_requested.connect(
+        self.tabs.newTabRequested.connect(
             self.new_tab
         )
 
@@ -453,7 +440,7 @@ class MainWindow(QMainWindow):
         )
 
     # ======================================================
-    # QR CODE
+    # QR
     # ======================================================
 
     def show_qr_code(self):
@@ -472,11 +459,6 @@ class MainWindow(QMainWindow):
         )
 
         if not url:
-            return
-
-        if url.startswith(
-            "about:"
-        ):
             return
 
         dialog = QRDialog(
@@ -823,7 +805,9 @@ class MainWindow(QMainWindow):
             browser.url().toString()
         )
 
-        title = browser.title()
+        title = (
+            browser.title()
+        )
 
         if title:
 
@@ -889,22 +873,6 @@ class MainWindow(QMainWindow):
 
         self.loading_bar.hide()
 
-        browser = (
-            self.current_browser()
-        )
-
-        if browser:
-
-            title = (
-                browser.title()
-            )
-
-            if title:
-
-                self.setWindowTitle(
-                    f"{title} — Veyra"
-                )
-
     def _load_progress(
         self,
         progress,
@@ -929,7 +897,9 @@ class MainWindow(QMainWindow):
     # PLACEHOLDERS
     # ======================================================
 
-    def _bookmarks_placeholder(self):
+    def _bookmarks_placeholder(
+        self,
+    ):
 
         print(
             "Bookmarks are not implemented yet."
