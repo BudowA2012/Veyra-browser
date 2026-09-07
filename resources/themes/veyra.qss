@@ -1,45 +1,27 @@
 /* =========================================================
-   VEYRA
-   Main dark theme
+   VEYRA BASE STYLE
    ========================================================= */
 
-
-/* ================= GLOBAL ================= */
-
-QMainWindow {
-    background: #0b0c10;
-}
-
 QWidget {
-    background: #0b0c10;
-    color: #eceef5;
-
     font-family: "Segoe UI";
     font-size: 14px;
 }
 
 
-/* ================= NAVIGATION ================= */
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
 
 #NavigationBar {
-    background: #12141b;
-
     border: none;
-    border-bottom: 1px solid #232633;
-
     padding: 6px;
 }
-
-
-/* ================= NAVIGATION BUTTONS ================= */
 
 #NavigationButton {
     background: transparent;
 
     border: none;
     border-radius: 10px;
-
-    color: #a9acb8;
 
     min-width: 36px;
     max-width: 36px;
@@ -50,61 +32,18 @@ QWidget {
     font-size: 18px;
 }
 
-#NavigationButton:hover {
-    background: #1d2130;
-    color: #ffffff;
-}
 
-#NavigationButton:pressed {
-    background: #282d40;
-}
-
-
-/* ================= GENERIC BUTTON ================= */
-
-QPushButton {
-    background: transparent;
-
-    border: none;
-    border-radius: 10px;
-
-    color: #a9acb8;
-}
-
-QPushButton:hover {
-    background: #1d2130;
-    color: #ffffff;
-}
-
-QPushButton:pressed {
-    background: #282d40;
-}
-
-
-/* ================= ADDRESS BAR ================= */
+/* =========================================================
+   ADDRESS BAR
+   ========================================================= */
 
 #AddressBar {
-    background: #171b26;
-
-    border: 1px solid #2b3040;
     border-radius: 19px;
 
     padding-left: 16px;
     padding-right: 16px;
 
-    color: #ffffff;
-
-    selection-background-color: #7c5cff;
-}
-
-#AddressBar:hover {
-    border-color: #373d50;
-}
-
-#AddressBar:focus {
-    background: #191d29;
-
-    border: 1px solid #7c5cff;
+    min-height: 36px;
 }
 
 
@@ -113,31 +52,16 @@ QPushButton:pressed {
    ========================================================= */
 
 QTabWidget::pane {
-    background: #0b0c10;
-
     border: none;
-    border-top: 1px solid #1b1e28;
 }
 
-
-/* ================= TAB BAR ================= */
-
 #VeyraTabBar {
-    background: #101218;
-
     border: none;
 
     padding-left: 6px;
 }
 
-
-/* ================= NORMAL TAB ================= */
-
 #VeyraTabBar::tab {
-    background: transparent;
-
-    color: #8d91a0;
-
     border: none;
     border-radius: 9px;
 
@@ -153,27 +77,6 @@ QTabWidget::pane {
     min-height: 28px;
 }
 
-
-/* ================= TAB HOVER ================= */
-
-#VeyraTabBar::tab:hover {
-    background: #191d27;
-
-    color: #dfe2eb;
-}
-
-
-/* ================= ACTIVE TAB ================= */
-
-#VeyraTabBar::tab:selected {
-    background: #242936;
-
-    color: #ffffff;
-}
-
-
-/* ================= TAB CLOSE BUTTON ================= */
-
 #VeyraTabBar::close-button {
     subcontrol-position: right;
 
@@ -187,15 +90,9 @@ QTabWidget::pane {
    ========================================================= */
 
 #TabNewButton {
-    background: #171a22;
-
-    border: 1px solid #292e3a;
     border-radius: 9px;
 
-    color: #aeb3c1;
-
     font-size: 20px;
-    font-weight: 400;
 
     min-width: 32px;
     max-width: 32px;
@@ -207,87 +104,46 @@ QTabWidget::pane {
     margin: 0px;
 }
 
-#TabNewButton:hover {
-    background: #252a38;
 
-    border: 1px solid #3b4254;
+/* =========================================================
+   NEW TAB PAGE
+   ========================================================= */
 
-    color: #ffffff;
+#NewTabPage,
+#NewTabCenter {
+    border: none;
 }
-
-#TabNewButton:pressed {
-    background: #303646;
-
-    border-color: #4a5268;
-}
-
-
-/* Hover */
-
-#TabNewButton:hover {
-    background: #242936;
-
-    border-color: #343a4b;
-
-    color: #ffffff;
-}
-
-
-/* Press */
-
-#TabNewButton:pressed {
-    background: #303647;
-
-    border-color: #464d62;
-
-    color: #ffffff;
-}
-
-
-/* ================= NEW TAB PAGE ================= */
 
 #VeyraLogo {
     background: transparent;
 
     font-size: 72px;
     font-weight: 700;
-
-    color: #ffffff;
 }
 
 #VeyraSubtitle {
     background: transparent;
 
     font-size: 18px;
-
-    color: #8d91a3;
 }
 
 
-/* ================= NEW TAB SEARCH ================= */
+/* =========================================================
+   NEW TAB SEARCH
+   ========================================================= */
 
 #NewTabSearchContainer {
-    background: #171b26;
-
-    border: 1px solid #2b3040;
-    border-radius: 30px;
-}
-
-#NewTabSearchContainer:hover {
-    border-color: #3a4054;
+    border-radius: 26px;
 }
 
 #NewTabSearch {
     background: transparent;
 
     border: none;
-    border-radius: 0px;
 
     padding: 10px 14px;
 
-    color: #ffffff;
-
-    font-size: 17px;
+    font-size: 16px;
 }
 
 #NewTabSearch:focus {
@@ -295,64 +151,83 @@ QTabWidget::pane {
 }
 
 #NewTabSearchButton {
-    background: #7c5cff;
-
-    color: #ffffff;
-
     border: none;
-    border-radius: 20px;
+    border-radius: 18px;
+
+    font-size: 18px;
 
     min-width: 42px;
+    max-width: 42px;
+
     min-height: 42px;
-}
+    max-height: 42px;
 
-#NewTabSearchButton:hover {
-    background: #9178ff;
-}
-
-#NewTabSearchButton:pressed {
-    background: #6b4de8;
+    padding: 0px;
 }
 
 
-/* ================= SHORTCUTS ================= */
+/* =========================================================
+   SHORTCUTS
+   ========================================================= */
 
-#ShortcutButton {
-    background: #171b26;
+#ShortcutsTitle {
+    background: transparent;
 
-    border: 1px solid #2b3040;
-    border-radius: 16px;
-
-    padding: 14px;
-
-    min-width: 130px;
-    min-height: 80px;
-
-    color: #e7e9f0;
-
-    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-#ShortcutButton:hover {
-    background: #20253a;
-
-    border: 1px solid #7c5cff;
-
-    color: #ffffff;
+#ShortcutCard {
+    border-radius: 17px;
 }
 
-#ShortcutButton:pressed {
-    background: #282e45;
+#ShortcutIcon {
+    border-radius: 12px;
+
+    font-size: 19px;
+    font-weight: 700;
 }
 
+#ShortcutName {
+    background: transparent;
 
-/* ================= SIDEBAR ================= */
+    font-size: 14px;
+    font-weight: 600;
+}
 
-#Sidebar {
-    background: #0d0f15;
+#ShortcutMenuButton {
+    background: transparent;
 
     border: none;
-    border-right: 1px solid #1d212d;
+    border-radius: 7px;
+
+    font-size: 18px;
+
+    min-width: 26px;
+    max-width: 26px;
+
+    min-height: 26px;
+    max-height: 26px;
+
+    padding: 0px;
+    margin: 0px;
+}
+
+#AddShortcutCard {
+    background: transparent;
+
+    border-radius: 17px;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+#Sidebar {
+    border: none;
 }
 
 #SidebarButton {
@@ -361,8 +236,6 @@ QTabWidget::pane {
     border: none;
     border-radius: 11px;
 
-    color: #858a9b;
-
     text-align: left;
 
     padding-left: 15px;
@@ -370,76 +243,156 @@ QTabWidget::pane {
     font-size: 14px;
 }
 
-#SidebarButton:hover {
-    background: #181c27;
 
-    color: #e9ebf2;
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+#SettingsPage,
+#SettingsContainer {
+    border: none;
 }
 
-#SidebarButton:pressed {
-    background: #22283a;
+#SettingsTitle {
+    background: transparent;
+
+    font-size: 36px;
+    font-weight: 700;
 }
 
-#SidebarButton:checked {
-    background: #202638;
+#SettingsSubtitle {
+    background: transparent;
 
-    color: #ffffff;
+    font-size: 15px;
+}
+
+#SettingsSection {
+    border-radius: 16px;
+}
+
+#SettingsSectionTitle {
+    background: transparent;
+
+    font-size: 18px;
+    font-weight: 600;
+}
+
+#SettingsSectionDescription {
+    background: transparent;
+
+    font-size: 13px;
+}
+
+#SettingsRowTitle {
+    background: transparent;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#SettingsRowDescription {
+    background: transparent;
+
+    font-size: 12px;
 }
 
 
-/* ================= HISTORY ================= */
+/* =========================================================
+   THEME CARDS
+   ========================================================= */
 
-#HistoryPage {
-    background: #0b0c10;
+#ThemeCard {
+    border-radius: 13px;
+
+    text-align: left;
 }
+
+#ThemeCardTitle {
+    background: transparent;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#ThemeCardSubtitle {
+    background: transparent;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   SETTINGS ELEMENTS
+   ========================================================= */
+
+#SettingsSeparator {
+    border: none;
+
+    min-height: 1px;
+    max-height: 1px;
+}
+
+#SettingsComboBox {
+    border-radius: 9px;
+
+    padding: 8px 14px;
+
+    min-width: 150px;
+}
+
+#SettingsComboBox::drop-down {
+    border: none;
+
+    width: 26px;
+}
+
+#SettingsSwitch {
+    spacing: 0px;
+}
+
+#SettingsSwitch::indicator {
+    width: 42px;
+    height: 22px;
+}
+
+
+/* =========================================================
+   ABOUT
+   ========================================================= */
+
+#AboutTitle {
+    background: transparent;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#AboutText {
+    background: transparent;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
 
 #HistoryPageTitle {
     background: transparent;
 
     font-size: 32px;
     font-weight: 700;
-
-    color: #ffffff;
 }
 
-
-/* ================= HISTORY SEARCH ================= */
-
 #HistorySearch {
-    background: #171b26;
-
-    border: 1px solid #2b3040;
     border-radius: 14px;
 
     padding: 12px 16px;
-
-    color: #ffffff;
-
-    selection-background-color: #7c5cff;
 }
-
-#HistorySearch:hover {
-    border-color: #373d50;
-}
-
-#HistorySearch:focus {
-    border-color: #7c5cff;
-}
-
-
-/* ================= HISTORY ITEM ================= */
 
 #HistoryItem {
-    background: #141720;
-
-    border: 1px solid #242938;
     border-radius: 14px;
-}
-
-#HistoryItem:hover {
-    background: #1a1e2a;
-
-    border-color: #353b50;
 }
 
 #HistoryTitle {
@@ -447,54 +400,21 @@ QTabWidget::pane {
 
     font-size: 15px;
     font-weight: 600;
-
-    color: #ffffff;
 }
 
-#HistoryUrl {
-    background: transparent;
-
-    color: #858a9c;
-}
-
+#HistoryUrl,
 #HistoryTime {
     background: transparent;
-
-    color: #606577;
-
-    font-size: 12px;
 }
 
-
-/* ================= HISTORY BUTTONS ================= */
-
 #HistoryOpenButton {
-    background: #202638;
-
-    border: none;
     border-radius: 10px;
 
     padding: 8px 14px;
-
-    color: #ffffff;
 }
-
-#HistoryOpenButton:hover {
-    background: #7c5cff;
-}
-
-#HistoryOpenButton:pressed {
-    background: #6b4de8;
-}
-
 
 #HistoryDeleteButton {
-    background: transparent;
-
-    border: none;
     border-radius: 8px;
-
-    color: #8b90a0;
 
     min-width: 32px;
     max-width: 32px;
@@ -503,88 +423,78 @@ QTabWidget::pane {
     max-height: 32px;
 }
 
-#HistoryDeleteButton:hover {
-    background: #d94b5b;
-
-    color: #ffffff;
-}
-
-#HistoryDeleteButton:pressed {
-    background: #b93c4b;
-}
-
-
 #HistoryClearButton {
-    background: #20232e;
-
-    border: none;
     border-radius: 10px;
 
     padding: 10px 16px;
-
-    color: #d5d8e2;
-}
-
-#HistoryClearButton:hover {
-    background: #d94b5b;
-
-    color: #ffffff;
-}
-
-#HistoryClearButton:pressed {
-    background: #b93c4b;
 }
 
 
-/* ================= HISTORY EMPTY ================= */
-
-#HistoryEmpty {
-    background: transparent;
-
-    color: #686d7d;
-
-    font-size: 16px;
-}
-
-
-/* ================= DOWNLOADS ================= */
+/* =========================================================
+   DOWNLOADS
+   ========================================================= */
 
 #DownloadsTitle {
     background: transparent;
-
-    color: #ffffff;
 
     font-size: 32px;
     font-weight: 700;
 }
 
-QScrollArea {
+
+/* =========================================================
+   DIALOGS
+   ========================================================= */
+
+#ShortcutDialogTitle {
     background: transparent;
 
+    font-size: 22px;
+    font-weight: 700;
+}
+
+#ShortcutDialogInput {
+    border-radius: 10px;
+
+    padding: 9px 12px;
+}
+
+
+/* =========================================================
+   GENERIC BUTTON
+   ========================================================= */
+
+QPushButton {
+    border: none;
+    border-radius: 9px;
+}
+
+
+/* =========================================================
+   SCROLL AREA
+   ========================================================= */
+
+QScrollArea {
     border: none;
 }
 
 
-/* ================= SCROLLBAR ================= */
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
 
 QScrollBar:vertical {
     background: transparent;
 
-    width: 10px;
+    width: 9px;
 
-    margin: 2px;
+    margin: 3px;
 }
 
 QScrollBar::handle:vertical {
-    background: #303545;
-
-    border-radius: 5px;
+    border-radius: 4px;
 
     min-height: 30px;
-}
-
-QScrollBar::handle:vertical:hover {
-    background: #41485d;
 }
 
 QScrollBar::add-line:vertical,
@@ -598,21 +508,8 @@ QScrollBar::sub-page:vertical {
 }
 
 
-/* ================= TOOLTIPS ================= */
-
-QToolTip {
-    background: #202430;
-
-    color: #ffffff;
-
-    border: 1px solid #34394a;
-    border-radius: 6px;
-
-    padding: 5px 8px;
-}
-
 /* =========================================================
-   BROWSER LOADING BAR
+   LOADING BAR
    ========================================================= */
 
 #BrowserLoadingBar {
@@ -625,8 +522,16 @@ QToolTip {
 }
 
 #BrowserLoadingBar::chunk {
-    background: #7c5cff;
-
     border: none;
-    border-radius: 1px;
+}
+
+
+/* =========================================================
+   TOOLTIPS
+   ========================================================= */
+
+QToolTip {
+    border-radius: 6px;
+
+    padding: 5px 8px;
 }

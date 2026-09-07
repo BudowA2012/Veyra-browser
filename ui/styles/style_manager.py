@@ -1,31 +1,108 @@
 from pathlib import Path
 
+from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication
 
 
-def load_style(app: QApplication):
+AVAILABLE_THEMES = {
+    "midnight",
+    "graphite",
+    "aurora",
+    "light",
+}
 
-    project_root = Path(__file__).resolve().parents[2]
+DEFAULT_THEME = "midnight"
 
-    style_path = (
+
+def get_current_theme():
+    settings = QSettings(
+        "Veyra",
+        "VeyraBrowser",
+    )
+
+    theme = settings.value(
+        "appearance/theme",
+        DEFAULT_THEME,
+    )
+
+    if theme not in AVAILABLE_THEMES:
+        return DEFAULT_THEME
+
+    return theme
+
+
+def apply_theme(
+    app: QApplication,
+    theme_name: str,
+):
+    if theme_name not in AVAILABLE_THEMES:
+        theme_name = DEFAULT_THEME
+
+    project_root = Path(
+        __file__
+    ).resolve().parents[2]
+
+    themes_folder = (
         project_root
         / "resources"
         / "themes"
+    )
+
+    base_path = (
+        themes_folder
         / "veyra.qss"
     )
 
-    if not style_path.exists():
+    theme_path = (
+        themes_folder
+        / f"{theme_name}.qss"
+    )
+
+    if not base_path.exists():
         print(
-            f"Veyra style not found: {style_path}"
+            f"Base stylesheet not found: {base_path}"
         )
         return
 
-    with open(
-        style_path,
-        "r",
-        encoding="utf-8",
-    ) as file:
+    if not theme_path.exists():
+        print(
+            f"Theme stylesheet not found: {theme_path}"
+        )
+        return
 
-        stylesheet = file.read()
+    base_stylesheet = base_path.read_text(
+        encoding="utf-8"
+    )
 
-    app.setStyleSheet(stylesheet)
+    theme_stylesheet = theme_path.read_text(
+        encoding="utf-8"
+    )
+
+    stylesheet = (
+        base_stylesheet
+        + "\n\n"
+        + theme_stylesheet
+    )
+
+    app.setStyleSheet(
+        stylesheet
+    )
+
+    settings = QSettings(
+        "Veyra",
+        "VeyraBrowser",
+    )
+
+    settings.setValue(
+        "appearance/theme",
+        theme_name,
+    )
+
+
+def load_style(
+    app: QApplication,
+):
+    apply_theme(
+        app,
+        get_current_theme(),
+    )

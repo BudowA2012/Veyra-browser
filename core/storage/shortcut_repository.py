@@ -7,48 +7,109 @@ class ShortcutRepository:
 
         self.db = Database()
 
+    # ==================================================
+    # GET ALL
+    # ==================================================
+
     def get_all(self):
 
-        cursor = self.db.connection.cursor()
+        cursor = (
+            self.db.connection.cursor()
+        )
 
-        cursor.execute("""
-            SELECT id,name,url
+        cursor.execute(
+            """
+            SELECT id, name, url
             FROM shortcuts
             ORDER BY id
-        """)
+            """
+        )
 
         return cursor.fetchall()
 
-    def add(self,name,url):
+    # ==================================================
+    # ADD
+    # ==================================================
 
-        cursor = self.db.connection.cursor()
+    def add(
+        self,
+        name,
+        url,
+    ):
 
-        cursor.execute("""
-            INSERT INTO shortcuts(name,url)
-            VALUES (?,?)
-        """,(name,url))
+        cursor = (
+            self.db.connection.cursor()
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO shortcuts(
+                name,
+                url
+            )
+            VALUES (?, ?)
+            """,
+            (
+                name,
+                url,
+            ),
+        )
 
         self.db.connection.commit()
 
-    def update(self,id,name,url):
+    # ==================================================
+    # UPDATE
+    # ==================================================
 
-        cursor = self.db.connection.cursor()
+    def update(
+        self,
+        shortcut_id,
+        name,
+        url,
+    ):
 
-        cursor.execute("""
+        cursor = (
+            self.db.connection.cursor()
+        )
+
+        cursor.execute(
+            """
             UPDATE shortcuts
-            SET name=?,url=?
-            WHERE id=?
-        """,(name,url,id))
+            SET
+                name = ?,
+                url = ?
+            WHERE id = ?
+            """,
+            (
+                name,
+                url,
+                shortcut_id,
+            ),
+        )
 
         self.db.connection.commit()
 
-    def delete(self,id):
+    # ==================================================
+    # DELETE
+    # ==================================================
 
-        cursor = self.db.connection.cursor()
+    def delete(
+        self,
+        shortcut_id,
+    ):
 
-        cursor.execute("""
+        cursor = (
+            self.db.connection.cursor()
+        )
+
+        cursor.execute(
+            """
             DELETE FROM shortcuts
-            WHERE id=?
-        """,(id,))
+            WHERE id = ?
+            """,
+            (
+                shortcut_id,
+            ),
+        )
 
         self.db.connection.commit()

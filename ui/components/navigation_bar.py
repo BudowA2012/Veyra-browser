@@ -1,4 +1,7 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import (
+    Qt,
+    Signal,
+)
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
@@ -16,14 +19,23 @@ class NavigationBar(QWidget):
     reload_requested = Signal()
     home_requested = Signal()
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    qr_requested = Signal()
+
+    def __init__(
+        self,
+        parent=None,
+    ):
+        super().__init__(
+            parent
+        )
 
         self.setObjectName(
             "NavigationBar"
         )
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout(
+            self
+        )
 
         layout.setContentsMargins(
             12,
@@ -32,16 +44,29 @@ class NavigationBar(QWidget):
             7,
         )
 
-        layout.setSpacing(6)
+        layout.setSpacing(
+            6
+        )
 
         # ==================================================
-        # BUTTONS
+        # NAV BUTTONS
         # ==================================================
 
-        self.back_button = QPushButton("‹")
-        self.forward_button = QPushButton("›")
-        self.reload_button = QPushButton("↻")
-        self.home_button = QPushButton("⌂")
+        self.back_button = QPushButton(
+            "‹"
+        )
+
+        self.forward_button = QPushButton(
+            "›"
+        )
+
+        self.reload_button = QPushButton(
+            "↻"
+        )
+
+        self.home_button = QPushButton(
+            "⌂"
+        )
 
         for button in (
             self.back_button,
@@ -82,6 +107,31 @@ class NavigationBar(QWidget):
         )
 
         # ==================================================
+        # QR BUTTON
+        # ==================================================
+
+        self.qr_button = QPushButton(
+            "QR"
+        )
+
+        self.qr_button.setObjectName(
+            "NavigationButton"
+        )
+
+        self.qr_button.setFixedSize(
+            36,
+            36,
+        )
+
+        self.qr_button.setToolTip(
+            "Create QR code for this page"
+        )
+
+        self.qr_button.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
+
+        # ==================================================
         # LAYOUT
         # ==================================================
 
@@ -104,6 +154,10 @@ class NavigationBar(QWidget):
         layout.addWidget(
             self.address_bar,
             1,
+        )
+
+        layout.addWidget(
+            self.qr_button
         )
 
         # ==================================================
@@ -130,11 +184,17 @@ class NavigationBar(QWidget):
             self.home_requested.emit
         )
 
+        self.qr_button.clicked.connect(
+            self.qr_requested.emit
+        )
+
     # ==================================================
     # ADDRESS
     # ==================================================
 
-    def _address_submitted(self):
+    def _address_submitted(
+        self,
+    ):
 
         text = (
             self.address_bar
@@ -161,7 +221,9 @@ class NavigationBar(QWidget):
             0
         )
 
-    def focus_address_bar(self):
+    def focus_address_bar(
+        self,
+    ):
 
         self.address_bar.setFocus()
 

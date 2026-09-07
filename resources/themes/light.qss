@@ -1,0 +1,357 @@
+QMainWindow,
+QWidget {
+    background: #f4f5f8;
+    color: #17191e;
+}
+
+#NavigationBar {
+    background: #ffffff;
+    border-bottom: 1px solid #d7dae2;
+}
+
+#NavigationButton {
+    color: #5d6370;
+}
+
+#NavigationButton:hover {
+    background: #e4e7ed;
+    color: #17191e;
+}
+
+#NavigationButton:pressed {
+    background: #dce0e8;
+}
+
+#AddressBar {
+    background: #eceef3;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+    selection-background-color: #6851e8;
+}
+
+#AddressBar:hover {
+    border-color: #b9bfca;
+}
+
+#AddressBar:focus {
+    border: 1px solid #6851e8;
+}
+
+QTabWidget::pane {
+    background: #f4f5f8;
+    border-top: 1px solid #d7dae2;
+}
+
+#VeyraTabBar {
+    background: #ebeef3;
+}
+
+#VeyraTabBar::tab {
+    background: transparent;
+    color: #5d6370;
+}
+
+#VeyraTabBar::tab:hover {
+    background: #e4e7ed;
+    color: #17191e;
+}
+
+#VeyraTabBar::tab:selected {
+    background: #dce0e8;
+    color: #17191e;
+}
+
+#TabNewButton {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+    color: #5d6370;
+}
+
+#TabNewButton:hover {
+    background: #e4e7ed;
+    border-color: #b9bfca;
+    color: #17191e;
+}
+
+#TabNewButton:pressed {
+    background: #dce0e8;
+}
+
+#VeyraLogo {
+    color: #17191e;
+}
+
+#VeyraSubtitle {
+    color: #8c929d;
+}
+
+#NewTabSearchContainer {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+}
+
+#NewTabSearchContainer:hover {
+    border-color: #b9bfca;
+}
+
+#NewTabSearch {
+    color: #17191e;
+    selection-background-color: #6851e8;
+}
+
+#NewTabSearchButton {
+    background: #6851e8;
+    color: #ffffff;
+}
+
+#NewTabSearchButton:hover {
+    background: #7b65ed;
+}
+
+#NewTabSearchButton:pressed {
+    background: #5841d1;
+}
+
+#ShortcutsTitle {
+    color: #8c929d;
+}
+
+#ShortcutCard {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+}
+
+#ShortcutCard:hover {
+    background: #e4e7ed;
+    border-color: #b9bfca;
+}
+
+#ShortcutIcon {
+    background: #eceef3;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+}
+
+#ShortcutName {
+    color: #17191e;
+}
+
+#ShortcutMenuButton {
+    color: #8c929d;
+}
+
+#ShortcutMenuButton:hover {
+    background: #dce0e8;
+    color: #17191e;
+}
+
+#AddShortcutCard {
+    border: 1px dashed #b9bfca;
+    color: #8c929d;
+}
+
+#AddShortcutCard:hover {
+    background: #e4e7ed;
+    border: 1px solid #6851e8;
+    color: #17191e;
+}
+
+#Sidebar {
+    background: #eef0f4;
+    border-right: 1px solid #d7dae2;
+}
+
+#SidebarButton {
+    color: #5d6370;
+}
+
+#SidebarButton:hover {
+    background: #e4e7ed;
+    color: #17191e;
+}
+
+#SidebarButton:pressed,
+#SidebarButton:checked {
+    background: #dce0e8;
+    color: #17191e;
+}
+
+#SettingsPage,
+#SettingsContainer {
+    background: #f4f5f8;
+}
+
+#SettingsTitle,
+#SettingsSectionTitle,
+#SettingsRowTitle,
+#ThemeCardTitle,
+#AboutTitle {
+    color: #17191e;
+}
+
+#SettingsSubtitle,
+#SettingsSectionDescription,
+#SettingsRowDescription,
+#ThemeCardSubtitle,
+#AboutText {
+    color: #8c929d;
+}
+
+#SettingsSection {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+}
+
+#ThemeCard {
+    background: #eceef3;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+}
+
+#ThemeCard:hover {
+    background: #e4e7ed;
+    border-color: #b9bfca;
+}
+
+#ThemeCard:checked {
+    background: #dce0e8;
+    border: 2px solid #6851e8;
+}
+
+#SettingsSeparator {
+    background: #d7dae2;
+}
+
+#SettingsComboBox {
+    background: #eceef3;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+}
+
+#SettingsComboBox:hover {
+    border-color: #b9bfca;
+}
+
+QComboBox QAbstractItemView {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+    selection-background-color: #dce0e8;
+}
+
+#SettingsSwitch::indicator {
+    background: #eceef3;
+    border: 1px solid #b9bfca;
+}
+
+#SettingsSwitch::indicator:checked {
+    background: #6851e8;
+    border: 1px solid #6851e8;
+}
+
+#HistoryPage {
+    background: #f4f5f8;
+}
+
+#HistoryPageTitle,
+#HistoryTitle {
+    color: #17191e;
+}
+
+#HistorySearch {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+}
+
+#HistorySearch:focus {
+    border-color: #6851e8;
+}
+
+#HistoryItem {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+}
+
+#HistoryItem:hover {
+    background: #e4e7ed;
+    border-color: #b9bfca;
+}
+
+#HistoryUrl,
+#HistoryTime {
+    color: #8c929d;
+}
+
+#HistoryOpenButton {
+    background: #dce0e8;
+    color: #17191e;
+}
+
+#HistoryOpenButton:hover {
+    background: #6851e8;
+    color: #ffffff;
+}
+
+#HistoryDeleteButton:hover,
+#HistoryClearButton:hover {
+    background: #d74755;
+    color: #ffffff;
+}
+
+#DownloadsTitle {
+    color: #17191e;
+}
+
+QDialog {
+    background: #f4f5f8;
+}
+
+#ShortcutDialogTitle {
+    color: #17191e;
+}
+
+#ShortcutDialogInput {
+    background: #ffffff;
+    border: 1px solid #d7dae2;
+    color: #17191e;
+}
+
+#ShortcutDialogInput:focus {
+    border-color: #6851e8;
+}
+
+QPushButton {
+    color: #5d6370;
+}
+
+QPushButton:hover {
+    background: #e4e7ed;
+    color: #17191e;
+}
+
+QPushButton:pressed {
+    background: #dce0e8;
+}
+
+QScrollArea {
+    background: #f4f5f8;
+}
+
+QScrollBar::handle:vertical {
+    background: #b9bfca;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #8c929d;
+}
+
+#BrowserLoadingBar::chunk {
+    background: #6851e8;
+}
+
+QToolTip {
+    background: #ffffff;
+    color: #17191e;
+    border: 1px solid #b9bfca;
+}

@@ -1,7 +1,16 @@
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QTabWidget
+from PySide6.QtWebEngineCore import (
+    QWebEngineNewWindowRequest,
+)
+from PySide6.QtWebEngineWidgets import (
+    QWebEngineView,
+)
+from PySide6.QtWidgets import (
+    QTabWidget,
+)
 
-from ui.new_tab.new_tab_page import NewTabPage
+from ui.new_tab.new_tab_page import (
+    NewTabPage,
+)
 
 
 class TabManager:
@@ -16,9 +25,9 @@ class TabManager:
         self.browser_manager = browser_manager
         self.parent = parent
 
-    # ==================================================
-    # NEW TAB
-    # ==================================================
+    # ======================================================
+    # NEW TAB PAGE
+    # ======================================================
 
     def create_new_tab_page(self):
 
@@ -27,7 +36,8 @@ class TabManager:
         )
 
         page.search_requested.connect(
-            lambda text, page=page:
+            lambda text,
+            page=page:
             self.navigate_widget(
                 page,
                 text,
@@ -35,7 +45,8 @@ class TabManager:
         )
 
         page.shortcut_requested.connect(
-            lambda text, page=page:
+            lambda text,
+            page=page:
             self.navigate_widget(
                 page,
                 text,
@@ -53,14 +64,15 @@ class TabManager:
 
         return index
 
-    # ==================================================
-    # BROWSER
-    # ==================================================
+    # ======================================================
+    # CREATE BROWSER
+    # ======================================================
 
     def create_browser(self):
 
         browser = (
-            self.browser_manager.create_browser()
+            self.browser_manager
+            .create_browser()
         )
 
         self._connect_browser(
@@ -69,9 +81,14 @@ class TabManager:
 
         return browser
 
+    # ======================================================
+    # CREATE BROWSER TAB
+    # ======================================================
+
     def create_browser_tab(
         self,
         url=None,
+        activate=True,
     ):
 
         browser = self.create_browser()
@@ -81,9 +98,11 @@ class TabManager:
             "New Tab",
         )
 
-        self.tabs.setCurrentIndex(
-            index
-        )
+        if activate:
+
+            self.tabs.setCurrentIndex(
+                index
+            )
 
         if url:
 
@@ -94,9 +113,9 @@ class TabManager:
 
         return index
 
-    # ==================================================
-    # NAVIGATION
-    # ==================================================
+    # ======================================================
+    # NAVIGATE CURRENT
+    # ======================================================
 
     def navigate_current(
         self,
@@ -115,20 +134,26 @@ class TabManager:
             text,
         )
 
+    # ======================================================
+    # NAVIGATE WIDGET
+    # ======================================================
+
     def navigate_widget(
         self,
         widget,
         text,
     ):
 
-        text = str(text).strip()
+        text = str(
+            text
+        ).strip()
 
         if not text:
             return
 
-        # ----------------------------------------------
-        # Już jesteśmy na stronie WWW
-        # ----------------------------------------------
+        # ==================================================
+        # NORMAL WEB TAB
+        # ==================================================
 
         if isinstance(
             widget,
@@ -142,12 +167,9 @@ class TabManager:
 
             return
 
-        # ----------------------------------------------
-        # NEW TAB -> BROWSER
-        #
-        # Zachowujemy TEN SAM INDEX.
-        # Nie tworzymy karty na końcu.
-        # ----------------------------------------------
+        # ==================================================
+        # INTERNAL PAGE -> WEB PAGE
+        # ==================================================
 
         index = self.tabs.indexOf(
             widget
@@ -156,14 +178,15 @@ class TabManager:
         if index < 0:
             return
 
-        current_index = (
-            self.tabs.currentIndex()
+        was_current = (
+            self.tabs.currentWidget()
+            is widget
         )
 
-        browser = self.create_browser()
+        browser = (
+            self.create_browser()
+        )
 
-        # Na chwilę blokujemy redraw,
-        # dzięki czemu przejście nie miga.
         self.tabs.setUpdatesEnabled(
             False
         )
@@ -178,7 +201,7 @@ class TabManager:
             "New Tab",
         )
 
-        if current_index == index:
+        if was_current:
 
             self.tabs.setCurrentIndex(
                 index
@@ -192,15 +215,14 @@ class TabManager:
 
         widget.deleteLater()
 
-        # Dopiero po podmianie zaczynamy ładowanie.
         self.browser_manager.load_url(
             browser,
             text,
         )
 
-    # ==================================================
+    # ======================================================
     # BROWSER SIGNALS
-    # ==================================================
+    # ======================================================
 
     def _connect_browser(
         self,
@@ -208,7 +230,8 @@ class TabManager:
     ):
 
         browser.titleChanged.connect(
-            lambda title, browser=browser:
+            lambda title,
+            browser=browser:
             self._update_title(
                 browser,
                 title,
@@ -216,16 +239,69 @@ class TabManager:
         )
 
         browser.iconChanged.connect(
-            lambda icon, browser=browser:
+            lambda icon,
+            browser=browser:
             self._update_icon(
                 browser,
                 icon,
             )
         )
 
-    # ==================================================
+        # ==================================================
+        # TARGET=_BLANK / WINDOW.OPEN
+        # ==================================================
+
+        browser.page().newWindowRequested.connect(
+            self._handle_new_window_request
+        )
+
+    # ======================================================
+    # NEW WINDOW REQUEST
+    # ======================================================
+
+    def _handle_new_window_request(
+        self,
+        request,
+    ):
+
+        destination = (
+            request.destination()
+        )
+
+        background = (
+            destination
+            == QWebEngineNewWindowRequest.DestinationType.InNewBackgroundTab
+        )
+
+        current_index = (
+            self.tabs.currentIndex()
+        )
+
+        new_index = (
+            self.create_browser_tab(
+                activate=not background
+            )
+        )
+
+        browser = self.tabs.widget(
+            new_index
+        )
+
+        # Qt przekazuje cały request do nowej strony.
+        request.openIn(
+            browser.page()
+        )
+
+        # Background tab faktycznie zostaje w tle.
+        if background:
+
+            self.tabs.setCurrentIndex(
+                current_index
+            )
+
+    # ======================================================
     # CURRENT BROWSER
-    # ==================================================
+    # ======================================================
 
     def current_browser(self):
 
@@ -242,9 +318,9 @@ class TabManager:
 
         return None
 
-    # ==================================================
-    # CLOSE
-    # ==================================================
+    # ======================================================
+    # CLOSE TAB
+    # ======================================================
 
     def close_tab(
         self,
@@ -254,8 +330,10 @@ class TabManager:
         if index < 0:
             return
 
-        widget = self.tabs.widget(
-            index
+        widget = (
+            self.tabs.widget(
+                index
+            )
         )
 
         self.tabs.removeTab(
@@ -266,13 +344,16 @@ class TabManager:
 
             widget.deleteLater()
 
-        if self.tabs.count() == 0:
+        if (
+            self.tabs.count()
+            == 0
+        ):
 
             self.create_new_tab_page()
 
-    # ==================================================
-    # TITLE
-    # ==================================================
+    # ======================================================
+    # UPDATE TITLE
+    # ======================================================
 
     def _update_title(
         self,
@@ -296,9 +377,9 @@ class TabManager:
             title[:28],
         )
 
-    # ==================================================
-    # ICON
-    # ==================================================
+    # ======================================================
+    # UPDATE ICON
+    # ======================================================
 
     def _update_icon(
         self,
