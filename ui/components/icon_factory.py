@@ -7,17 +7,21 @@ from PySide6.QtGui import (
     QColor,
     QIcon,
     QPainter,
+    QPainterPath,
     QPen,
     QPixmap,
 )
 
 
-ICON_COLOR = QColor("#aeb3c1")
+ICON_COLOR = QColor(
+    "#aeb3c1"
+)
 
 
 def create_icon(
     name: str,
     size: int = 20,
+    color=None,
 ) -> QIcon:
 
     pixmap = QPixmap(
@@ -38,14 +42,20 @@ def create_icon(
         True,
     )
 
+    icon_color = (
+        QColor(color)
+        if color
+        else ICON_COLOR
+    )
+
     pen = QPen(
-        ICON_COLOR
+        icon_color
     )
 
     pen.setWidthF(
         max(
-            1.6,
-            size * 0.09,
+            1.5,
+            size * 0.085,
         )
     )
 
@@ -65,44 +75,28 @@ def create_icon(
         Qt.BrushStyle.NoBrush
     )
 
-    if name == "back":
-        _draw_back(
-            painter,
-            size,
-        )
+    drawers = {
+        "back": _draw_back,
+        "forward": _draw_forward,
+        "reload": _draw_reload,
+        "home": _draw_home,
+        "qr": _draw_qr,
+        "plus": _draw_plus,
+        "close": _draw_close,
+        "download": _draw_download,
+        "menu": _draw_menu,
+        "bookmark": _draw_bookmark,
+        "history": _draw_history,
+        "settings": _draw_settings,
+    }
 
-    elif name == "forward":
-        _draw_forward(
-            painter,
-            size,
-        )
+    drawer = drawers.get(
+        name
+    )
 
-    elif name == "reload":
-        _draw_reload(
-            painter,
-            size,
-        )
+    if drawer:
 
-    elif name == "home":
-        _draw_home(
-            painter,
-            size,
-        )
-
-    elif name == "qr":
-        _draw_qr(
-            painter,
-            size,
-        )
-
-    elif name == "plus":
-        _draw_plus(
-            painter,
-            size,
-        )
-
-    elif name == "close":
-        _draw_close(
+        drawer(
             painter,
             size,
         )
@@ -124,25 +118,21 @@ def _draw_back(
     size,
 ):
 
-    left = size * 0.29
-    center_y = size * 0.50
-    right = size * 0.72
-
     painter.drawLine(
         QPointF(
-            right,
-            center_y,
+            size * 0.72,
+            size * 0.50,
         ),
         QPointF(
-            left,
-            center_y,
+            size * 0.29,
+            size * 0.50,
         ),
     )
 
     painter.drawLine(
         QPointF(
-            left,
-            center_y,
+            size * 0.29,
+            size * 0.50,
         ),
         QPointF(
             size * 0.47,
@@ -152,8 +142,8 @@ def _draw_back(
 
     painter.drawLine(
         QPointF(
-            left,
-            center_y,
+            size * 0.29,
+            size * 0.50,
         ),
         QPointF(
             size * 0.47,
@@ -172,25 +162,21 @@ def _draw_forward(
     size,
 ):
 
-    left = size * 0.28
-    center_y = size * 0.50
-    right = size * 0.71
-
     painter.drawLine(
         QPointF(
-            left,
-            center_y,
+            size * 0.28,
+            size * 0.50,
         ),
         QPointF(
-            right,
-            center_y,
+            size * 0.71,
+            size * 0.50,
         ),
     )
 
     painter.drawLine(
         QPointF(
-            right,
-            center_y,
+            size * 0.71,
+            size * 0.50,
         ),
         QPointF(
             size * 0.53,
@@ -200,8 +186,8 @@ def _draw_forward(
 
     painter.drawLine(
         QPointF(
-            right,
-            center_y,
+            size * 0.71,
+            size * 0.50,
         ),
         QPointF(
             size * 0.53,
@@ -229,7 +215,7 @@ def _draw_reload(
 
     painter.drawArc(
         rect,
-        30 * 16,
+        35 * 16,
         285 * 16,
     )
 
@@ -268,58 +254,317 @@ def _draw_home(
 
     painter.drawLine(
         QPointF(
-            size * 0.24,
-            size * 0.48,
+            size * 0.22,
+            size * 0.49,
         ),
         QPointF(
             size * 0.50,
-            size * 0.26,
+            size * 0.25,
         ),
     )
 
     painter.drawLine(
         QPointF(
             size * 0.50,
-            size * 0.26,
+            size * 0.25,
         ),
         QPointF(
+            size * 0.78,
+            size * 0.49,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.30,
+            size * 0.43,
+        ),
+        QPointF(
+            size * 0.30,
             size * 0.76,
-            size * 0.48,
         ),
     )
 
     painter.drawLine(
         QPointF(
-            size * 0.31,
+            size * 0.70,
+            size * 0.43,
+        ),
+        QPointF(
+            size * 0.70,
+            size * 0.76,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.30,
+            size * 0.76,
+        ),
+        QPointF(
+            size * 0.70,
+            size * 0.76,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
             size * 0.44,
+            size * 0.76,
         ),
         QPointF(
-            size * 0.31,
-            size * 0.74,
-        ),
-    )
-
-    painter.drawLine(
-        QPointF(
-            size * 0.69,
             size * 0.44,
-        ),
-        QPointF(
-            size * 0.69,
-            size * 0.74,
+            size * 0.59,
         ),
     )
 
     painter.drawLine(
         QPointF(
-            size * 0.31,
-            size * 0.74,
+            size * 0.44,
+            size * 0.59,
         ),
         QPointF(
-            size * 0.69,
-            size * 0.74,
+            size * 0.56,
+            size * 0.59,
         ),
     )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.56,
+            size * 0.59,
+        ),
+        QPointF(
+            size * 0.56,
+            size * 0.76,
+        ),
+    )
+
+
+# =========================================================
+# MENU
+# =========================================================
+
+
+def _draw_menu(
+    painter,
+    size,
+):
+
+    for y in (
+        0.32,
+        0.50,
+        0.68,
+    ):
+
+        painter.drawLine(
+            QPointF(
+                size * 0.28,
+                size * y,
+            ),
+            QPointF(
+                size * 0.72,
+                size * y,
+            ),
+        )
+
+
+# =========================================================
+# BOOKMARK
+# =========================================================
+
+
+def _draw_bookmark(
+    painter,
+    size,
+):
+
+    path = QPainterPath()
+
+    path.moveTo(
+        size * 0.34,
+        size * 0.22,
+    )
+
+    path.lineTo(
+        size * 0.66,
+        size * 0.22,
+    )
+
+    path.lineTo(
+        size * 0.66,
+        size * 0.78,
+    )
+
+    path.lineTo(
+        size * 0.50,
+        size * 0.66,
+    )
+
+    path.lineTo(
+        size * 0.34,
+        size * 0.78,
+    )
+
+    path.closeSubpath()
+
+    painter.drawPath(
+        path
+    )
+
+
+# =========================================================
+# HISTORY
+# =========================================================
+
+
+def _draw_history(
+    painter,
+    size,
+):
+
+    rect = QRectF(
+        size * 0.23,
+        size * 0.23,
+        size * 0.54,
+        size * 0.54,
+    )
+
+    painter.drawEllipse(
+        rect
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.50,
+            size * 0.34,
+        ),
+        QPointF(
+            size * 0.50,
+            size * 0.52,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.50,
+            size * 0.52,
+        ),
+        QPointF(
+            size * 0.63,
+            size * 0.59,
+        ),
+    )
+
+
+# =========================================================
+# DOWNLOAD
+# =========================================================
+
+
+def _draw_download(
+    painter,
+    size,
+):
+
+    painter.drawLine(
+        QPointF(
+            size * 0.50,
+            size * 0.19,
+        ),
+        QPointF(
+            size * 0.50,
+            size * 0.62,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.34,
+            size * 0.47,
+        ),
+        QPointF(
+            size * 0.50,
+            size * 0.62,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.66,
+            size * 0.47,
+        ),
+        QPointF(
+            size * 0.50,
+            size * 0.62,
+        ),
+    )
+
+    painter.drawLine(
+        QPointF(
+            size * 0.27,
+            size * 0.77,
+        ),
+        QPointF(
+            size * 0.73,
+            size * 0.77,
+        ),
+    )
+
+
+# =========================================================
+# SETTINGS
+# =========================================================
+
+
+def _draw_settings(
+    painter,
+    size,
+):
+
+    center = QPointF(
+        size * 0.50,
+        size * 0.50,
+    )
+
+    painter.drawEllipse(
+        center,
+        size * 0.13,
+        size * 0.13,
+    )
+
+    outer = QRectF(
+        size * 0.27,
+        size * 0.27,
+        size * 0.46,
+        size * 0.46,
+    )
+
+    painter.drawEllipse(
+        outer
+    )
+
+    for x1, y1, x2, y2 in (
+        (0.50, 0.16, 0.50, 0.27),
+        (0.50, 0.73, 0.50, 0.84),
+        (0.16, 0.50, 0.27, 0.50),
+        (0.73, 0.50, 0.84, 0.50),
+        (0.26, 0.26, 0.34, 0.34),
+        (0.66, 0.66, 0.74, 0.74),
+        (0.74, 0.26, 0.66, 0.34),
+        (0.34, 0.66, 0.26, 0.74),
+    ):
+
+        painter.drawLine(
+            QPointF(
+                size * x1,
+                size * y1,
+            ),
+            QPointF(
+                size * x2,
+                size * y2,
+            ),
+        )
 
 
 # =========================================================
@@ -332,34 +577,24 @@ def _draw_qr(
     size,
 ):
 
-    small_pen = painter.pen()
-
-    small_pen.setWidthF(
-        max(
-            1.4,
-            size * 0.07,
-        )
-    )
-
-    painter.setPen(
-        small_pen
-    )
-
-    def box(x, y):
+    def box(
+        x,
+        y,
+    ):
 
         painter.drawRect(
             QRectF(
                 size * x,
                 size * y,
-                size * 0.23,
-                size * 0.23,
+                size * 0.22,
+                size * 0.22,
             )
         )
 
         painter.drawRect(
             QRectF(
-                size * (x + 0.07),
-                size * (y + 0.07),
+                size * (x + 0.065),
+                size * (y + 0.065),
                 size * 0.09,
                 size * 0.09,
             )
@@ -371,56 +606,45 @@ def _draw_qr(
     )
 
     box(
-        0.60,
+        0.61,
         0.17,
     )
 
     box(
         0.17,
-        0.60,
+        0.61,
     )
 
     painter.drawLine(
         QPointF(
-            size * 0.60,
-            size * 0.60,
+            size * 0.61,
+            size * 0.61,
         ),
         QPointF(
-            size * 0.60,
-            size * 0.78,
-        ),
-    )
-
-    painter.drawLine(
-        QPointF(
-            size * 0.60,
-            size * 0.60,
-        ),
-        QPointF(
-            size * 0.78,
-            size * 0.60,
+            size * 0.61,
+            size * 0.80,
         ),
     )
 
     painter.drawLine(
         QPointF(
-            size * 0.72,
-            size * 0.68,
+            size * 0.61,
+            size * 0.61,
         ),
         QPointF(
-            size * 0.79,
-            size * 0.68,
+            size * 0.80,
+            size * 0.61,
         ),
     )
 
     painter.drawLine(
         QPointF(
-            size * 0.72,
-            size * 0.68,
+            size * 0.73,
+            size * 0.70,
         ),
         QPointF(
-            size * 0.72,
-            size * 0.79,
+            size * 0.80,
+            size * 0.70,
         ),
     )
 

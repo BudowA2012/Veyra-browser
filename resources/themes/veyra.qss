@@ -263,6 +263,66 @@ QWidget {
     border: none;
 }
 
+
+/* ================= HEADER ================= */
+
+#SidebarHeader {
+    background: transparent;
+    border: none;
+}
+
+
+/* ================= VEYRA LOGO ================= */
+
+#SidebarLogo {
+    border-radius: 10px;
+
+    font-size: 18px;
+    font-weight: 700;
+}
+
+
+/* ================= BRAND ================= */
+
+#SidebarBrand {
+    background: transparent;
+    border: none;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+
+/* ================= TOGGLE ================= */
+
+#SidebarToggleButton {
+    background: transparent;
+
+    border: none;
+    border-radius: 9px;
+
+    padding: 0px;
+}
+
+
+/* ================= SECTION LABEL ================= */
+
+#SidebarSectionLabel {
+    background: transparent;
+
+    border: none;
+
+    padding-left: 10px;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+
+/* ================= NAVIGATION BUTTON ================= */
+
 #SidebarButton {
     background: transparent;
 
@@ -271,9 +331,21 @@ QWidget {
 
     text-align: left;
 
-    padding-left: 15px;
+    padding-left: 13px;
+    padding-right: 10px;
 
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* ================= DIVIDER ================= */
+
+#SidebarDivider {
+    border: none;
+
+    min-height: 1px;
+    max-height: 1px;
 }
 
 

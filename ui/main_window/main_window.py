@@ -1,8 +1,15 @@
-from PySide6.QtCore import QUrl
+import json
+
+from PySide6.QtCore import (
+    QSettings,
+    QUrl,
+)
+
 from PySide6.QtGui import (
     QKeySequence,
     QShortcut,
 )
+
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -10,6 +17,10 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QVBoxLayout,
     QWidget,
+)
+
+from PySide6.QtWebEngineWidgets import (
+    QWebEngineView,
 )
 
 from core.browser.browser_manager import (
@@ -30,6 +41,9 @@ from ui.components.qr_dialog import (
 )
 from ui.downloads.download_page import (
     DownloadPage,
+)
+from ui.downloads.download_popup import (
+    DownloadPopup,
 )
 from ui.history.history_page import (
     HistoryPage,
@@ -56,8 +70,21 @@ from ui.tabs.tab_widget import (
 
 class MainWindow(QMainWindow):
 
-    def __init__(self):
+    DOWNLOAD_POPUP_MARGIN = 18
+
+    def __init__(
+        self,
+    ):
         super().__init__()
+
+        # ==================================================
+        # SETTINGS
+        # ==================================================
+
+        self.settings = QSettings(
+            "Veyra",
+            "VeyraBrowser",
+        )
 
         # ==================================================
         # WINDOW
@@ -102,7 +129,9 @@ class MainWindow(QMainWindow):
         # UI
         # ==================================================
 
-        self.sidebar = Sidebar()
+        self.sidebar = (
+            Sidebar()
+        )
 
         self.navigation_bar = (
             NavigationBar()
@@ -136,7 +165,7 @@ class MainWindow(QMainWindow):
         self.loading_bar.hide()
 
         # ==================================================
-        # NEW TAB SYSTEM
+        # TABS
         # ==================================================
 
         self.tabs = (
@@ -160,20 +189,41 @@ class MainWindow(QMainWindow):
         # ==================================================
 
         self._build_layout()
+
+        # ==================================================
+        # DOWNLOAD POPUP
+        # ==================================================
+
+        self.download_popup = (
+            DownloadPopup(
+                self
+            )
+        )
+
+        self.download_popup.show_all_requested.connect(
+            self._show_all_downloads_from_popup
+        )
+
+        # ==================================================
+        # SIGNALS
+        # ==================================================
+
         self._connect_signals()
         self._setup_shortcuts()
 
         # ==================================================
-        # FIRST TAB
+        # STARTUP
         # ==================================================
 
-        self.new_tab()
+        self._restore_session_or_new_tab()
 
     # ======================================================
     # LAYOUT
     # ======================================================
 
-    def _build_layout(self):
+    def _build_layout(
+        self,
+    ):
 
         central = QWidget()
 
@@ -196,12 +246,10 @@ class MainWindow(QMainWindow):
             self.sidebar
         )
 
-        content = QWidget()
+        self.content = QWidget()
 
-        content_layout = (
-            QVBoxLayout(
-                content
-            )
+        content_layout = QVBoxLayout(
+            self.content
         )
 
         content_layout.setContentsMargins(
@@ -229,7 +277,7 @@ class MainWindow(QMainWindow):
         )
 
         root.addWidget(
-            content,
+            self.content,
             1,
         )
 
@@ -241,9 +289,14 @@ class MainWindow(QMainWindow):
     # SIGNALS
     # ======================================================
 
-    def _connect_signals(self):
+    def _connect_signals(
+        self,
+    ):
 
-        # Navigation
+        # ==================================================
+        # NAVIGATION
+        # ==================================================
+
         self.navigation_bar.navigate_requested.connect(
             self.navigate
         )
@@ -268,7 +321,10 @@ class MainWindow(QMainWindow):
             self.show_qr_code
         )
 
-        # Tabs
+        # ==================================================
+        # TABS
+        # ==================================================
+
         self.tabs.currentChanged.connect(
             self._tab_changed
         )
@@ -281,7 +337,10 @@ class MainWindow(QMainWindow):
             self.new_tab
         )
 
-        # Browser
+        # ==================================================
+        # BROWSER
+        # ==================================================
+
         self.browser_manager.url_changed.connect(
             self._url_changed
         )
@@ -298,12 +357,18 @@ class MainWindow(QMainWindow):
             self._load_progress
         )
 
-        # Downloads
+        # ==================================================
+        # DOWNLOADS
+        # ==================================================
+
         self.download_manager.download_added.connect(
             self._download_started
         )
 
-        # Sidebar
+        # ==================================================
+        # SIDEBAR
+        # ==================================================
+
         self.sidebar.home_requested.connect(
             self.new_tab
         )
@@ -328,7 +393,9 @@ class MainWindow(QMainWindow):
     # SHORTCUTS
     # ======================================================
 
-    def _setup_shortcuts(self):
+    def _setup_shortcuts(
+        self,
+    ):
 
         QShortcut(
             QKeySequence(
@@ -407,7 +474,9 @@ class MainWindow(QMainWindow):
     # NEW TAB
     # ======================================================
 
-    def new_tab(self):
+    def new_tab(
+        self,
+    ):
 
         index = (
             self.tab_manager
@@ -432,7 +501,9 @@ class MainWindow(QMainWindow):
     # CURRENT BROWSER
     # ======================================================
 
-    def current_browser(self):
+    def current_browser(
+        self,
+    ):
 
         return (
             self.tab_manager
@@ -440,10 +511,242 @@ class MainWindow(QMainWindow):
         )
 
     # ======================================================
+    # SESSION RESTORE
+    # ======================================================
+
+    def _restore_session_or_new_tab(
+        self,
+    ):
+
+        restore_enabled = (
+            self.settings.value(
+                "browser/restore_session",
+                True,
+                type=bool,
+            )
+        )
+
+        if not restore_enabled:
+
+            self.new_tab()
+            return
+
+        raw_session = (
+            self.settings.value(
+                "session/tabs",
+                "",
+            )
+        )
+
+        if not raw_session:
+
+            self.new_tab()
+            return
+
+        try:
+
+            session = json.loads(
+                raw_session
+            )
+
+        except (
+            json.JSONDecodeError,
+            TypeError,
+        ):
+
+            self.new_tab()
+            return
+
+        tabs_data = session.get(
+            "tabs",
+            []
+        )
+
+        active_index = session.get(
+            "active_index",
+            0,
+        )
+
+        if not tabs_data:
+
+            self.new_tab()
+            return
+
+        restored_count = 0
+
+        # ==================================================
+        # RESTORE TABS
+        # ==================================================
+
+        for tab_data in tabs_data:
+
+            tab_type = tab_data.get(
+                "type"
+            )
+
+            # ==============================================
+            # NEW TAB
+            # ==============================================
+
+            if tab_type == "new_tab":
+
+                self.tab_manager.create_new_tab_page()
+
+                restored_count += 1
+
+                continue
+
+            # ==============================================
+            # WEBSITE
+            # ==============================================
+
+            if tab_type == "web":
+
+                url = tab_data.get(
+                    "url",
+                    "",
+                )
+
+                if not url:
+                    continue
+
+                self.tab_manager.create_browser_tab(
+                    url=url,
+                    activate=False,
+                )
+
+                restored_count += 1
+
+        # ==================================================
+        # NOTHING RESTORED
+        # ==================================================
+
+        if restored_count == 0:
+
+            self.new_tab()
+            return
+
+        # ==================================================
+        # ACTIVE TAB
+        # ==================================================
+
+        active_index = max(
+            0,
+            min(
+                active_index,
+                self.tabs.count() - 1,
+            ),
+        )
+
+        self.tabs.setCurrentIndex(
+            active_index
+        )
+
+    # ======================================================
+    # SAVE SESSION
+    # ======================================================
+
+    def _save_session(
+        self,
+    ):
+
+        tabs_data = []
+
+        active_saved_index = 0
+
+        current_widget = (
+            self.tabs.currentWidget()
+        )
+
+        for index in range(
+            self.tabs.count()
+        ):
+
+            widget = (
+                self.tabs.widget(
+                    index
+                )
+            )
+
+            # ==============================================
+            # NEW TAB
+            # ==============================================
+
+            if isinstance(
+                widget,
+                NewTabPage,
+            ):
+
+                if widget is current_widget:
+
+                    active_saved_index = (
+                        len(
+                            tabs_data
+                        )
+                    )
+
+                tabs_data.append(
+                    {
+                        "type": "new_tab",
+                    }
+                )
+
+                continue
+
+            # ==============================================
+            # NORMAL WEBSITE
+            # ==============================================
+
+            if isinstance(
+                widget,
+                QWebEngineView,
+            ):
+
+                url = (
+                    widget.url()
+                    .toString()
+                    .strip()
+                )
+
+                if not url:
+                    continue
+
+                if widget is current_widget:
+
+                    active_saved_index = (
+                        len(
+                            tabs_data
+                        )
+                    )
+
+                tabs_data.append(
+                    {
+                        "type": "web",
+                        "url": url,
+                    }
+                )
+
+        session = {
+            "tabs": tabs_data,
+            "active_index": active_saved_index,
+        }
+
+        self.settings.setValue(
+            "session/tabs",
+            json.dumps(
+                session
+            ),
+        )
+
+        self.settings.sync()
+
+    # ======================================================
     # QR
     # ======================================================
 
-    def show_qr_code(self):
+    def show_qr_code(
+        self,
+    ):
 
         browser = (
             self.current_browser()
@@ -472,7 +775,9 @@ class MainWindow(QMainWindow):
     # BROWSER CONTROLS
     # ======================================================
 
-    def go_back(self):
+    def go_back(
+        self,
+    ):
 
         browser = (
             self.current_browser()
@@ -485,7 +790,9 @@ class MainWindow(QMainWindow):
 
             browser.back()
 
-    def go_forward(self):
+    def go_forward(
+        self,
+    ):
 
         browser = (
             self.current_browser()
@@ -498,7 +805,9 @@ class MainWindow(QMainWindow):
 
             browser.forward()
 
-    def reload(self):
+    def reload(
+        self,
+    ):
 
         browser = (
             self.current_browser()
@@ -508,7 +817,9 @@ class MainWindow(QMainWindow):
 
             browser.reload()
 
-    def go_home(self):
+    def go_home(
+        self,
+    ):
 
         browser = (
             self.current_browser()
@@ -548,6 +859,7 @@ class MainWindow(QMainWindow):
         if url_string.startswith(
             "about:"
         ):
+
             return
 
         self.history_repository.add(
@@ -555,7 +867,9 @@ class MainWindow(QMainWindow):
             url_string,
         )
 
-    def show_history(self):
+    def show_history(
+        self,
+    ):
 
         for index in range(
             self.tabs.count()
@@ -594,7 +908,7 @@ class MainWindow(QMainWindow):
         )
 
     # ======================================================
-    # DOWNLOADS
+    # DOWNLOAD POPUP
     # ======================================================
 
     def _download_started(
@@ -602,9 +916,64 @@ class MainWindow(QMainWindow):
         download,
     ):
 
+        self.download_popup.show_download(
+            download
+        )
+
+        self._position_download_popup()
+
+    def _position_download_popup(
+        self,
+    ):
+
+        if not self.download_popup.isVisible():
+            return
+
+        self.download_popup.adjustSize()
+
+        x = (
+            self.width()
+            - self.download_popup.width()
+            - self.DOWNLOAD_POPUP_MARGIN
+        )
+
+        y = (
+            self.navigation_bar.height()
+            + 10
+        )
+
+        x = max(
+            x,
+            0,
+        )
+
+        y = max(
+            y,
+            0,
+        )
+
+        self.download_popup.move(
+            x,
+            y,
+        )
+
+        self.download_popup.raise_()
+
+    def _show_all_downloads_from_popup(
+        self,
+    ):
+
+        self.download_popup.hide_popup()
+
         self.show_downloads()
 
-    def show_downloads(self):
+    # ======================================================
+    # DOWNLOAD PAGE
+    # ======================================================
+
+    def show_downloads(
+        self,
+    ):
 
         for index in range(
             self.tabs.count()
@@ -644,7 +1013,9 @@ class MainWindow(QMainWindow):
     # SETTINGS
     # ======================================================
 
-    def show_settings(self):
+    def show_settings(
+        self,
+    ):
 
         for index in range(
             self.tabs.count()
@@ -698,11 +1069,15 @@ class MainWindow(QMainWindow):
                 theme_name,
             )
 
+        self.download_popup._apply_theme()
+
     # ======================================================
     # CLOSE CURRENT TAB
     # ======================================================
 
-    def _close_current_tab(self):
+    def _close_current_tab(
+        self,
+    ):
 
         index = (
             self.tabs.currentIndex()
@@ -892,6 +1267,36 @@ class MainWindow(QMainWindow):
         else:
 
             self.loading_bar.hide()
+
+    # ======================================================
+    # WINDOW RESIZE
+    # ======================================================
+
+    def resizeEvent(
+        self,
+        event,
+    ):
+
+        super().resizeEvent(
+            event
+        )
+
+        self._position_download_popup()
+
+    # ======================================================
+    # WINDOW CLOSE
+    # ======================================================
+
+    def closeEvent(
+        self,
+        event,
+    ):
+
+        self._save_session()
+
+        super().closeEvent(
+            event
+        )
 
     # ======================================================
     # PLACEHOLDERS

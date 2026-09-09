@@ -1,5 +1,23 @@
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Signal
-from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
+from PySide6.QtCore import (
+    QEasingCurve,
+    QPropertyAnimation,
+    QSize,
+    Qt,
+    Signal,
+)
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+from ui.components.icon_factory import (
+    create_icon,
+)
 
 
 class Sidebar(QWidget):
@@ -10,93 +28,341 @@ class Sidebar(QWidget):
     downloads_requested = Signal()
     settings_requested = Signal()
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    EXPANDED_WIDTH = 210
+    COLLAPSED_WIDTH = 64
+
+    def __init__(
+        self,
+        parent=None,
+    ):
+        super().__init__(
+            parent
+        )
 
         self.expanded = True
         self._animation = None
 
-        self.setObjectName("Sidebar")
-
-        self.setMinimumWidth(68)
-        self.setMaximumWidth(220)
-
-        layout = QVBoxLayout(self)
-
-        layout.setContentsMargins(
-            10,
-            12,
-            10,
-            12,
+        self.setObjectName(
+            "Sidebar"
         )
 
-        layout.setSpacing(6)
+        self.setMinimumWidth(
+            self.COLLAPSED_WIDTH
+        )
 
-        # ------------------------------------------
-        # TOP
-        # ------------------------------------------
+        self.setMaximumWidth(
+            self.EXPANDED_WIDTH
+        )
 
-        self.toggle_button = self._button("☰")
+        self._build_ui()
+        self._connect_signals()
 
-        layout.addWidget(
+    # ======================================================
+    # BUILD
+    # ======================================================
+
+    def _build_ui(
+        self,
+    ):
+
+        root = QVBoxLayout(
+            self
+        )
+
+        root.setContentsMargins(
+            9,
+            10,
+            9,
+            10,
+        )
+
+        root.setSpacing(
+            3
+        )
+
+        # ==================================================
+        # BRAND HEADER
+        # ==================================================
+
+        self.header = QFrame()
+
+        self.header.setObjectName(
+            "SidebarHeader"
+        )
+
+        header_layout = QHBoxLayout(
+            self.header
+        )
+
+        header_layout.setContentsMargins(
+            5,
+            3,
+            3,
+            8,
+        )
+
+        header_layout.setSpacing(
+            9
+        )
+
+        self.logo = QLabel(
+            "V"
+        )
+
+        self.logo.setObjectName(
+            "SidebarLogo"
+        )
+
+        self.logo.setAlignment(
+            Qt.AlignmentFlag.AlignCenter
+        )
+
+        self.logo.setFixedSize(
+            34,
+            34,
+        )
+
+        self.brand = QLabel(
+            "Veyra"
+        )
+
+        self.brand.setObjectName(
+            "SidebarBrand"
+        )
+
+        self.toggle_button = QToolButton()
+
+        self.toggle_button.setObjectName(
+            "SidebarToggleButton"
+        )
+
+        self.toggle_button.setIcon(
+            create_icon(
+                "menu",
+                19,
+            )
+        )
+
+        self.toggle_button.setIconSize(
+            QSize(
+                18,
+                18,
+            )
+        )
+
+        self.toggle_button.setFixedSize(
+            32,
+            32,
+        )
+
+        self.toggle_button.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
+
+        self.toggle_button.setToolTip(
+            "Collapse sidebar (Ctrl+B)"
+        )
+
+        header_layout.addWidget(
+            self.logo
+        )
+
+        header_layout.addWidget(
+            self.brand
+        )
+
+        header_layout.addStretch(
+            1
+        )
+
+        header_layout.addWidget(
             self.toggle_button
         )
 
-        layout.addSpacing(12)
-
-        # ------------------------------------------
-        # NAVIGATION
-        # ------------------------------------------
-
-        self.home_button = self._button(
-            "Home"
+        root.addWidget(
+            self.header
         )
 
-        self.bookmarks_button = self._button(
-            "Bookmarks"
+        # ==================================================
+        # SECTION
+        # ==================================================
+
+        self.navigation_label = QLabel(
+            "NAVIGATION"
         )
 
-        self.history_button = self._button(
-            "History"
+        self.navigation_label.setObjectName(
+            "SidebarSectionLabel"
         )
 
-        self.downloads_button = self._button(
-            "Downloads"
+        root.addSpacing(
+            5
         )
 
-        layout.addWidget(
+        root.addWidget(
+            self.navigation_label
+        )
+
+        root.addSpacing(
+            3
+        )
+
+        # ==================================================
+        # BUTTONS
+        # ==================================================
+
+        self.home_button = (
+            self._create_button(
+                "home",
+                "Home",
+            )
+        )
+
+        self.bookmarks_button = (
+            self._create_button(
+                "bookmark",
+                "Bookmarks",
+            )
+        )
+
+        self.history_button = (
+            self._create_button(
+                "history",
+                "History",
+            )
+        )
+
+        self.downloads_button = (
+            self._create_button(
+                "download",
+                "Downloads",
+            )
+        )
+
+        root.addWidget(
             self.home_button
         )
 
-        layout.addWidget(
+        root.addWidget(
             self.bookmarks_button
         )
 
-        layout.addWidget(
+        root.addWidget(
             self.history_button
         )
 
-        layout.addWidget(
+        root.addWidget(
             self.downloads_button
         )
 
-        layout.addStretch()
-
-        # ------------------------------------------
-        # SETTINGS
-        # ------------------------------------------
-
-        self.settings_button = self._button(
-            "Settings"
+        root.addStretch(
+            1
         )
 
-        layout.addWidget(
+        # ==================================================
+        # BOTTOM DIVIDER
+        # ==================================================
+
+        self.bottom_divider = QFrame()
+
+        self.bottom_divider.setObjectName(
+            "SidebarDivider"
+        )
+
+        self.bottom_divider.setFixedHeight(
+            1
+        )
+
+        root.addWidget(
+            self.bottom_divider
+        )
+
+        root.addSpacing(
+            4
+        )
+
+        # ==================================================
+        # SETTINGS
+        # ==================================================
+
+        self.settings_button = (
+            self._create_button(
+                "settings",
+                "Settings",
+            )
+        )
+
+        root.addWidget(
             self.settings_button
         )
 
-        # ------------------------------------------
-        # SIGNALS
-        # ------------------------------------------
+    # ======================================================
+    # CREATE BUTTON
+    # ======================================================
+
+    def _create_button(
+        self,
+        icon_name,
+        text,
+    ):
+
+        button = QPushButton(
+            text
+        )
+
+        button.setObjectName(
+            "SidebarButton"
+        )
+
+        button.setProperty(
+            "sidebarText",
+            text,
+        )
+
+        button.setProperty(
+            "sidebarIcon",
+            icon_name,
+        )
+
+        button.setIcon(
+            create_icon(
+                icon_name,
+                20,
+            )
+        )
+
+        button.setIconSize(
+            QSize(
+                19,
+                19,
+            )
+        )
+
+        button.setMinimumHeight(
+            42
+        )
+
+        button.setMaximumHeight(
+            42
+        )
+
+        button.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
+
+        button.setToolTip(
+            text
+        )
+
+        return button
+
+    # ======================================================
+    # SIGNALS
+    # ======================================================
+
+    def _connect_signals(
+        self,
+    ):
 
         self.toggle_button.clicked.connect(
             self.toggle
@@ -122,34 +388,33 @@ class Sidebar(QWidget):
             self.settings_requested.emit
         )
 
-    def _button(self, text):
+    # ======================================================
+    # TOGGLE
+    # ======================================================
 
-        button = QPushButton(text)
+    def toggle(
+        self,
+    ):
 
-        button.setObjectName(
-            "SidebarButton"
+        self.expanded = (
+            not self.expanded
         )
 
-        button.setMinimumHeight(42)
-
-        return button
-
-    def toggle(self):
-
-        self.expanded = not self.expanded
-
         target_width = (
-            220
+            self.EXPANDED_WIDTH
             if self.expanded
-            else 68
+            else self.COLLAPSED_WIDTH
         )
 
         animation = QPropertyAnimation(
             self,
             b"maximumWidth",
+            self,
         )
 
-        animation.setDuration(220)
+        animation.setDuration(
+            180
+        )
 
         animation.setStartValue(
             self.maximumWidth()
@@ -160,57 +425,81 @@ class Sidebar(QWidget):
         )
 
         animation.setEasingCurve(
-            QEasingCurve.OutCubic
+            QEasingCurve.Type.OutCubic
         )
 
         animation.start()
 
         self._animation = animation
 
-        self._update_labels()
+        self._update_mode()
 
-    def _update_labels(self):
+    # ======================================================
+    # UPDATE MODE
+    # ======================================================
+
+    def _update_mode(
+        self,
+    ):
+
+        buttons = [
+            self.home_button,
+            self.bookmarks_button,
+            self.history_button,
+            self.downloads_button,
+            self.settings_button,
+        ]
 
         if self.expanded:
 
-            self.home_button.setText(
-                "Home"
+            self.brand.show()
+
+            self.navigation_label.show()
+
+            self.logo.show()
+
+            self.toggle_button.setToolTip(
+                "Collapse sidebar (Ctrl+B)"
             )
 
-            self.bookmarks_button.setText(
-                "Bookmarks"
-            )
+            for button in buttons:
 
-            self.history_button.setText(
-                "History"
-            )
+                text = button.property(
+                    "sidebarText"
+                )
 
-            self.downloads_button.setText(
-                "Downloads"
-            )
+                button.setText(
+                    text
+                )
 
-            self.settings_button.setText(
-                "Settings"
-            )
+                button.setStyleSheet(
+                    ""
+                )
 
         else:
 
-            self.home_button.setText(
-                "⌂"
+            self.brand.hide()
+
+            self.navigation_label.hide()
+
+            self.logo.hide()
+
+            self.toggle_button.setToolTip(
+                "Expand sidebar (Ctrl+B)"
             )
 
-            self.bookmarks_button.setText(
-                "☆"
-            )
+            for button in buttons:
 
-            self.history_button.setText(
-                "◷"
-            )
+                button.setText(
+                    ""
+                )
 
-            self.downloads_button.setText(
-                "↓"
-            )
-
-            self.settings_button.setText(
-                "⚙"
-            )
+                button.setStyleSheet(
+                    """
+                    QPushButton {
+                        padding-left: 0px;
+                        padding-right: 0px;
+                        text-align: center;
+                    }
+                    """
+                )

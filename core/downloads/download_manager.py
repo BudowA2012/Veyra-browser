@@ -21,13 +21,15 @@ class DownloadManager(QObject):
         profile,
         parent=None,
     ):
-        super().__init__(parent)
+        super().__init__(
+            parent
+        )
 
         self.profile = profile
         self.downloads = []
 
         # ==================================================
-        # DOWNLOAD DIRECTORY
+        # SYSTEM DOWNLOAD DIRECTORY
         # ==================================================
 
         downloads_location = (
@@ -38,9 +40,8 @@ class DownloadManager(QObject):
 
         if downloads_location:
 
-            self.download_folder = (
-                Path(downloads_location)
-                / "Veyra"
+            self.download_folder = Path(
+                downloads_location
             )
 
         else:
@@ -48,7 +49,6 @@ class DownloadManager(QObject):
             self.download_folder = (
                 Path.home()
                 / "Downloads"
-                / "Veyra"
             )
 
         self.download_folder.mkdir(
@@ -56,13 +56,16 @@ class DownloadManager(QObject):
             exist_ok=True,
         )
 
-        # Default dla całego profilu.
+        # Wszystkie downloady Veyry trafiają bezpośrednio
+        # do systemowego folderu Downloads.
         self.profile.setDownloadPath(
-            str(self.download_folder)
+            str(
+                self.download_folder
+            )
         )
 
         # ==================================================
-        # WEBENGINE DOWNLOAD SIGNAL
+        # DOWNLOAD SIGNAL
         # ==================================================
 
         self.profile.downloadRequested.connect(
@@ -84,32 +87,32 @@ class DownloadManager(QObject):
             or "download"
         )
 
-        safe_name = self._sanitize_filename(
-            suggested_name
+        safe_name = (
+            self._sanitize_filename(
+                suggested_name
+            )
         )
 
-        final_name = self._unique_filename(
-            safe_name
+        final_name = (
+            self._unique_filename(
+                safe_name
+            )
         )
 
-        # WAŻNE:
-        # directory i filename MUSZĄ być ustawione
-        # przed accept().
         download.setDownloadDirectory(
-            str(self.download_folder)
+            str(
+                self.download_folder
+            )
         )
 
         download.setDownloadFileName(
             final_name
         )
 
-        # Trzymamy obiekt przy życiu / mamy historię
-        # obecnej sesji.
         self.downloads.append(
             download
         )
 
-        # Stan końcowy
         download.stateChanged.connect(
             lambda state,
             item=download:
@@ -119,7 +122,6 @@ class DownloadManager(QObject):
             )
         )
 
-        # Start właściwego pobierania
         download.accept()
 
         self.download_added.emit(
@@ -137,9 +139,17 @@ class DownloadManager(QObject):
     ):
 
         finished_states = (
-            QWebEngineDownloadRequest.DownloadState.DownloadCompleted,
-            QWebEngineDownloadRequest.DownloadState.DownloadCancelled,
-            QWebEngineDownloadRequest.DownloadState.DownloadInterrupted,
+            QWebEngineDownloadRequest
+            .DownloadState
+            .DownloadCompleted,
+
+            QWebEngineDownloadRequest
+            .DownloadState
+            .DownloadCancelled,
+
+            QWebEngineDownloadRequest
+            .DownloadState
+            .DownloadInterrupted,
         )
 
         if state in finished_states:
@@ -149,7 +159,7 @@ class DownloadManager(QObject):
             )
 
     # ======================================================
-    # FILE NAME
+    # SAFE FILENAME
     # ======================================================
 
     def _sanitize_filename(
@@ -157,13 +167,10 @@ class DownloadManager(QObject):
         filename,
     ):
 
-        # Brak ścieżki z serwera typu:
-        # ../../file.exe
         filename = Path(
             filename
         ).name
 
-        # Znaki niedozwolone m.in. w Windows
         filename = re.sub(
             r'[<>:"/\\|?*]',
             "_",
@@ -180,6 +187,10 @@ class DownloadManager(QObject):
 
         return filename
 
+    # ======================================================
+    # UNIQUE FILENAME
+    # ======================================================
+
     def _unique_filename(
         self,
         filename,
@@ -190,8 +201,6 @@ class DownloadManager(QObject):
             / filename
         )
 
-        # Sprawdzamy też aktywne downloady,
-        # nie tylko pliki już istniejące.
         active_names = {
             item.downloadFileName()
             for item in self.downloads
@@ -235,10 +244,12 @@ class DownloadManager(QObject):
             number += 1
 
     # ======================================================
-    # GETTERS
+    # GET DOWNLOADS
     # ======================================================
 
-    def get_downloads(self):
+    def get_downloads(
+        self,
+    ):
 
         return list(
             self.downloads

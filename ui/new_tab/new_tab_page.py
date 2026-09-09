@@ -1,4 +1,9 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import (
+    QEvent,
+    Qt,
+    Signal,
+)
+
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -10,9 +15,21 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core.storage.shortcut_repository import ShortcutRepository
-from ui.new_tab.shortcut_card import ShortcutCard
-from ui.new_tab.shortcut_dialog import ShortcutDialog
+from core.storage.shortcut_repository import (
+    ShortcutRepository,
+)
+
+from ui.components.address_suggestions import (
+    AddressSuggestions,
+)
+
+from ui.new_tab.shortcut_card import (
+    ShortcutCard,
+)
+
+from ui.new_tab.shortcut_dialog import (
+    ShortcutDialog,
+)
 
 
 class NewTabPage(QWidget):
@@ -41,11 +58,13 @@ class NewTabPage(QWidget):
         self._build_ui()
         self._load_shortcuts()
 
-    # ==================================================
+    # ======================================================
     # UI
-    # ==================================================
+    # ======================================================
 
-    def _build_ui(self):
+    def _build_ui(
+        self,
+    ):
 
         main = QVBoxLayout(
             self
@@ -132,17 +151,17 @@ class NewTabPage(QWidget):
         )
 
         # ==================================================
-        # SEARCH
+        # SEARCH FRAME
         # ==================================================
 
-        search_frame = QFrame()
+        self.search_frame = QFrame()
 
-        search_frame.setObjectName(
+        self.search_frame.setObjectName(
             "NewTabSearchContainer"
         )
 
         search_layout = QHBoxLayout(
-            search_frame
+            self.search_frame
         )
 
         search_layout.setContentsMargins(
@@ -155,6 +174,10 @@ class NewTabPage(QWidget):
         search_layout.setSpacing(
             6
         )
+
+        # ==================================================
+        # SEARCH BAR
+        # ==================================================
 
         self.search_bar = QLineEdit()
 
@@ -169,6 +192,14 @@ class NewTabPage(QWidget):
         self.search_bar.setMinimumHeight(
             42
         )
+
+        self.search_bar.installEventFilter(
+            self
+        )
+
+        # ==================================================
+        # SEARCH BUTTON
+        # ==================================================
 
         self.search_button = QPushButton(
             "→"
@@ -197,7 +228,31 @@ class NewTabPage(QWidget):
         )
 
         center_layout.addWidget(
-            search_frame
+            self.search_frame
+        )
+
+        # ==================================================
+        # SUGGESTIONS
+        # ==================================================
+
+        self.suggestions = (
+            AddressSuggestions()
+        )
+
+        self.suggestions.selected.connect(
+            self._suggestion_selected
+        )
+
+        self.suggestions.results_ready.connect(
+            self._show_suggestions
+        )
+
+        # ==================================================
+        # SEARCH SIGNALS
+        # ==================================================
+
+        self.search_bar.textEdited.connect(
+            self._search_text_edited
         )
 
         self.search_bar.returnPressed.connect(
@@ -209,7 +264,7 @@ class NewTabPage(QWidget):
         )
 
         # ==================================================
-        # SHORTCUTS TITLE
+        # SHORTCUTS HEADER
         # ==================================================
 
         shortcuts_header = QHBoxLayout()
@@ -268,18 +323,84 @@ class NewTabPage(QWidget):
 
         main.addWidget(
             center,
-            alignment=Qt.AlignmentFlag.AlignHCenter,
+            alignment=(
+                Qt.AlignmentFlag.AlignHCenter
+            ),
         )
 
         main.addStretch(
             3
         )
 
-    # ==================================================
-    # SEARCH
-    # ==================================================
+    # ======================================================
+    # SEARCH TEXT
+    # ======================================================
 
-    def _submit_search(self):
+    def _search_text_edited(
+        self,
+        text,
+    ):
+
+        self.suggestions.query(
+            text
+        )
+
+    # ======================================================
+    # SHOW SUGGESTIONS
+    # ======================================================
+
+    def _show_suggestions(
+        self,
+    ):
+
+        if not self.search_bar.hasFocus():
+            return
+
+        self.suggestions.show_below(
+            self.search_frame
+        )
+
+    # ======================================================
+    # SUGGESTION SELECTED
+    # ======================================================
+
+    def _suggestion_selected(
+        self,
+        value,
+    ):
+
+        value = (
+            str(value)
+            .strip()
+        )
+
+        if not value:
+            return
+
+        self.search_bar.setText(
+            value
+        )
+
+        self.suggestions.hide()
+
+        self.search_requested.emit(
+            value
+        )
+
+    # ======================================================
+    # SEARCH
+    # ======================================================
+
+    def _submit_search(
+        self,
+    ):
+
+        if (
+            self.suggestions.isVisible()
+            and self.suggestions.activate_current()
+        ):
+
+            return
 
         text = (
             self.search_bar
@@ -287,17 +408,101 @@ class NewTabPage(QWidget):
             .strip()
         )
 
-        if text:
+        if not text:
+            return
 
-            self.search_requested.emit(
-                text
+        self.suggestions.hide()
+
+        self.search_requested.emit(
+            text
+        )
+
+    # ======================================================
+    # KEYBOARD
+    # ======================================================
+
+    def eventFilter(
+        self,
+        watched,
+        event,
+    ):
+
+        if (
+            watched
+            is self.search_bar
+            and event.type()
+            == QEvent.Type.KeyPress
+        ):
+
+            key = (
+                event.key()
             )
 
-    # ==================================================
-    # SHORTCUTS
-    # ==================================================
+            # ==============================================
+            # DOWN
+            # ==============================================
 
-    def _clear_shortcuts(self):
+            if (
+                key
+                == Qt.Key.Key_Down
+            ):
+
+                if (
+                    self.suggestions
+                    .isVisible()
+                ):
+
+                    self.suggestions.move_selection(
+                        1
+                    )
+
+                    return True
+
+            # ==============================================
+            # UP
+            # ==============================================
+
+            if (
+                key
+                == Qt.Key.Key_Up
+            ):
+
+                if (
+                    self.suggestions
+                    .isVisible()
+                ):
+
+                    self.suggestions.move_selection(
+                        -1
+                    )
+
+                    return True
+
+            # ==============================================
+            # ESC
+            # ==============================================
+
+            if (
+                key
+                == Qt.Key.Key_Escape
+            ):
+
+                self.suggestions.hide()
+
+                return True
+
+        return super().eventFilter(
+            watched,
+            event,
+        )
+
+    # ======================================================
+    # SHORTCUTS
+    # ======================================================
+
+    def _clear_shortcuts(
+        self,
+    ):
 
         while self.grid.count():
 
@@ -305,13 +510,17 @@ class NewTabPage(QWidget):
                 0
             )
 
-            widget = item.widget()
+            widget = (
+                item.widget()
+            )
 
             if widget:
 
                 widget.deleteLater()
 
-    def _load_shortcuts(self):
+    def _load_shortcuts(
+        self,
+    ):
 
         self._clear_shortcuts()
 
@@ -319,7 +528,10 @@ class NewTabPage(QWidget):
             self.repository.get_all()
         )
 
-        # Pierwsze uruchomienie
+        # ==================================================
+        # DEFAULT SHORTCUTS
+        # ==================================================
+
         if not shortcuts:
 
             defaults = [
@@ -337,7 +549,10 @@ class NewTabPage(QWidget):
                 ),
             ]
 
-            for name, url in defaults:
+            for (
+                name,
+                url,
+            ) in defaults:
 
                 self.repository.add(
                     name,
@@ -397,7 +612,7 @@ class NewTabPage(QWidget):
             position += 1
 
         # ==================================================
-        # ADD SHORTCUT CARD
+        # ADD SHORTCUT
         # ==================================================
 
         row = (
@@ -439,11 +654,13 @@ class NewTabPage(QWidget):
             column,
         )
 
-    # ==================================================
+    # ======================================================
     # ADD
-    # ==================================================
+    # ======================================================
 
-    def _add_shortcut(self):
+    def _add_shortcut(
+        self,
+    ):
 
         dialog = ShortcutDialog(
             self
@@ -456,7 +673,10 @@ class NewTabPage(QWidget):
             dialog.values()
         )
 
-        if not name or not url:
+        if (
+            not name
+            or not url
+        ):
             return
 
         self.repository.add(
@@ -466,9 +686,9 @@ class NewTabPage(QWidget):
 
         self._load_shortcuts()
 
-    # ==================================================
+    # ======================================================
     # EDIT
-    # ==================================================
+    # ======================================================
 
     def _edit_shortcut(
         self,
@@ -520,9 +740,9 @@ class NewTabPage(QWidget):
 
             return
 
-    # ==================================================
+    # ======================================================
     # DELETE
-    # ==================================================
+    # ======================================================
 
     def _delete_shortcut(
         self,
@@ -535,11 +755,13 @@ class NewTabPage(QWidget):
 
         self._load_shortcuts()
 
-    # ==================================================
+    # ======================================================
     # FOCUS
-    # ==================================================
+    # ======================================================
 
-    def focus_search(self):
+    def focus_search(
+        self,
+    ):
 
         self.search_bar.setFocus()
 
