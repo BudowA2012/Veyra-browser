@@ -30,6 +30,7 @@ class NavigationBar(QWidget):
     reload_requested = Signal()
     home_requested = Signal()
 
+    bookmark_requested = Signal()
     qr_requested = Signal()
 
     def __init__(
@@ -43,6 +44,8 @@ class NavigationBar(QWidget):
         self.setObjectName(
             "NavigationBar"
         )
+
+        self.bookmarked = False
 
         # ==================================================
         # LAYOUT
@@ -154,6 +157,18 @@ class NavigationBar(QWidget):
         )
 
         # ==================================================
+        # BOOKMARK
+        # ==================================================
+
+        self.bookmark_button = QPushButton()
+
+        self._prepare_button(
+            self.bookmark_button,
+            "bookmark",
+            "Add bookmark",
+        )
+
+        # ==================================================
         # QR
         # ==================================================
 
@@ -191,6 +206,10 @@ class NavigationBar(QWidget):
         )
 
         layout.addWidget(
+            self.bookmark_button
+        )
+
+        layout.addWidget(
             self.qr_button
         )
 
@@ -220,6 +239,10 @@ class NavigationBar(QWidget):
 
         self.home_button.clicked.connect(
             self.home_requested.emit
+        )
+
+        self.bookmark_button.clicked.connect(
+            self.bookmark_requested.emit
         )
 
         self.qr_button.clicked.connect(
@@ -267,6 +290,46 @@ class NavigationBar(QWidget):
         button.setCursor(
             Qt.CursorShape.PointingHandCursor
         )
+
+    # ======================================================
+    # BOOKMARK STATE
+    # ======================================================
+
+    def set_bookmarked(
+        self,
+        bookmarked,
+    ):
+
+        self.bookmarked = bool(
+            bookmarked
+        )
+
+        if self.bookmarked:
+
+            self.bookmark_button.setIcon(
+                create_icon(
+                    "bookmark",
+                    20,
+                    "#9b87ff",
+                )
+            )
+
+            self.bookmark_button.setToolTip(
+                "Remove bookmark"
+            )
+
+        else:
+
+            self.bookmark_button.setIcon(
+                create_icon(
+                    "bookmark",
+                    20,
+                )
+            )
+
+            self.bookmark_button.setToolTip(
+                "Add bookmark"
+            )
 
     # ======================================================
     # TEXT EDITED
@@ -327,7 +390,7 @@ class NavigationBar(QWidget):
         )
 
     # ======================================================
-    # SUGGESTION SELECTED
+    # SUGGESTION
     # ======================================================
 
     def _suggestion_selected(
@@ -374,10 +437,6 @@ class NavigationBar(QWidget):
                 event.key()
             )
 
-            # ==============================================
-            # DOWN
-            # ==============================================
-
             if (
                 key
                 == Qt.Key.Key_Down
@@ -394,10 +453,6 @@ class NavigationBar(QWidget):
 
                     return True
 
-            # ==============================================
-            # UP
-            # ==============================================
-
             if (
                 key
                 == Qt.Key.Key_Up
@@ -413,10 +468,6 @@ class NavigationBar(QWidget):
                     )
 
                     return True
-
-            # ==============================================
-            # ESC
-            # ==============================================
 
             if (
                 key

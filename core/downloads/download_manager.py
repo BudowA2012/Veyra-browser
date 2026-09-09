@@ -3,9 +3,11 @@ import re
 
 from PySide6.QtCore import (
     QObject,
+    QSettings,
     QStandardPaths,
     Signal,
 )
+
 from PySide6.QtWebEngineCore import (
     QWebEngineDownloadRequest,
 )
@@ -28,9 +30,37 @@ class DownloadManager(QObject):
         self.profile = profile
         self.downloads = []
 
-        # ==================================================
-        # SYSTEM DOWNLOAD DIRECTORY
-        # ==================================================
+        self.settings = QSettings(
+            "Veyra",
+            "VeyraBrowser",
+        )
+
+        self.download_folder = (
+            self._load_download_folder()
+        )
+
+        self.download_folder.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.profile.setDownloadPath(
+            str(
+                self.download_folder
+            )
+        )
+
+        self.profile.downloadRequested.connect(
+            self._handle_download
+        )
+
+    # ======================================================
+    # DEFAULT FOLDER
+    # ======================================================
+
+    def _default_download_folder(
+        self,
+    ):
 
         downloads_location = (
             QStandardPaths.writableLocation(
@@ -40,36 +70,74 @@ class DownloadManager(QObject):
 
         if downloads_location:
 
-            self.download_folder = Path(
+            return Path(
                 downloads_location
             )
 
-        else:
-
-            self.download_folder = (
-                Path.home()
-                / "Downloads"
-            )
-
-        self.download_folder.mkdir(
-            parents=True,
-            exist_ok=True,
+        return (
+            Path.home()
+            / "Downloads"
         )
 
-        # Wszystkie downloady Veyry trafiają bezpośrednio
-        # do systemowego folderu Downloads.
+    # ======================================================
+    # LOAD FOLDER
+    # ======================================================
+
+    def _load_download_folder(
+        self,
+    ):
+
+        saved = self.settings.value(
+            "downloads/location",
+            "",
+        )
+
+        if saved:
+
+            return Path(
+                saved
+            )
+
+        return (
+            self._default_download_folder()
+        )
+
+    # ======================================================
+    # SET FOLDER
+    # ======================================================
+
+    def set_download_folder(
+        self,
+        folder,
+    ):
+
+        if not folder:
+            return
+
+        path = Path(
+            folder
+        )
+
+        try:
+
+            path.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+        except OSError:
+
+            return
+
+        self.download_folder = path
+
+        self.settings.setValue(
+            "downloads/location",
+            str(path),
+        )
+
         self.profile.setDownloadPath(
-            str(
-                self.download_folder
-            )
-        )
-
-        # ==================================================
-        # DOWNLOAD SIGNAL
-        # ==================================================
-
-        self.profile.downloadRequested.connect(
-            self._handle_download
+            str(path)
         )
 
     # ======================================================
@@ -209,7 +277,8 @@ class DownloadManager(QObject):
 
         if (
             not path.exists()
-            and filename not in active_names
+            and filename
+            not in active_names
         ):
 
             return filename
@@ -236,7 +305,8 @@ class DownloadManager(QObject):
 
             if (
                 not candidate_path.exists()
-                and candidate not in active_names
+                and candidate
+                not in active_names
             ):
 
                 return candidate
@@ -244,7 +314,7 @@ class DownloadManager(QObject):
             number += 1
 
     # ======================================================
-    # GET DOWNLOADS
+    # DOWNLOADS
     # ======================================================
 
     def get_downloads(

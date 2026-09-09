@@ -22,10 +22,6 @@ class BrowserManager(QObject):
     loading_changed = Signal(bool)
     load_progress = Signal(int)
 
-    # ======================================================
-    # SEARCH ENGINES
-    # ======================================================
-
     SEARCH_ENGINES = {
         "Google": (
             "https://www.google.com/search?q={query}"
@@ -48,17 +44,13 @@ class BrowserManager(QObject):
             parent
         )
 
-        # ==================================================
-        # SETTINGS
-        # ==================================================
-
         self.settings = QSettings(
             "Veyra",
             "VeyraBrowser",
         )
 
         # ==================================================
-        # WEB ENGINE PROFILE
+        # PROFILE
         # ==================================================
 
         self.profile = QWebEngineProfile(
@@ -66,17 +58,53 @@ class BrowserManager(QObject):
             self,
         )
 
-        self.profile.setPersistentCookiesPolicy(
-            QWebEngineProfile
-            .PersistentCookiesPolicy
-            .ForcePersistentCookies
-        )
+        self._apply_cookie_policy()
 
         self.profile.setHttpCacheType(
             QWebEngineProfile
             .HttpCacheType
             .DiskHttpCache
         )
+
+    # ======================================================
+    # COOKIE POLICY
+    # ======================================================
+
+    def _apply_cookie_policy(
+        self,
+    ):
+
+        persistent = self.settings.value(
+            "privacy/persistent_cookies",
+            True,
+            type=bool,
+        )
+
+        if persistent:
+
+            policy = (
+                QWebEngineProfile
+                .PersistentCookiesPolicy
+                .ForcePersistentCookies
+            )
+
+        else:
+
+            policy = (
+                QWebEngineProfile
+                .PersistentCookiesPolicy
+                .NoPersistentCookies
+            )
+
+        self.profile.setPersistentCookiesPolicy(
+            policy
+        )
+
+    def refresh_cookie_policy(
+        self,
+    ):
+
+        self._apply_cookie_policy()
 
     # ======================================================
     # CREATE BROWSER
@@ -98,24 +126,34 @@ class BrowserManager(QObject):
         )
 
         # ==================================================
-        # URL
+        # DEFAULT ZOOM
         # ==================================================
+
+        zoom = self.settings.value(
+            "browser/default_zoom",
+            100,
+            type=int,
+        )
+
+        zoom = max(
+            50,
+            min(
+                zoom,
+                300,
+            ),
+        )
+
+        browser.setZoomFactor(
+            zoom / 100.0
+        )
 
         browser.urlChanged.connect(
             self.url_changed.emit
         )
 
-        # ==================================================
-        # TITLE
-        # ==================================================
-
         browser.titleChanged.connect(
             self.title_changed.emit
         )
-
-        # ==================================================
-        # LOAD START
-        # ==================================================
 
         browser.loadStarted.connect(
             lambda:
@@ -124,17 +162,9 @@ class BrowserManager(QObject):
             )
         )
 
-        # ==================================================
-        # LOAD PROGRESS
-        # ==================================================
-
         browser.loadProgress.connect(
             self.load_progress.emit
         )
-
-        # ==================================================
-        # LOAD END
-        # ==================================================
 
         browser.loadFinished.connect(
             lambda _success:
@@ -146,7 +176,19 @@ class BrowserManager(QObject):
         return browser
 
     # ======================================================
-    # LOAD URL / SEARCH
+    # CLEAR DATA
+    # ======================================================
+
+    def clear_browsing_data(
+        self,
+    ):
+
+        self.profile.cookieStore().deleteAllCookies()
+
+        self.profile.clearHttpCache()
+
+    # ======================================================
+    # LOAD URL
     # ======================================================
 
     def load_url(
@@ -163,19 +205,11 @@ class BrowserManager(QObject):
         if not text:
             return
 
-        # ==================================================
-        # ALREADY HAS SCHEME
-        # ==================================================
-
         if self._has_scheme(
             text
         ):
 
             final_url = text
-
-        # ==================================================
-        # LOOKS LIKE WEBSITE
-        # ==================================================
 
         elif self._looks_like_url(
             text
@@ -185,10 +219,6 @@ class BrowserManager(QObject):
                 "https://"
                 + text
             )
-
-        # ==================================================
-        # SEARCH QUERY
-        # ==================================================
 
         else:
 
@@ -205,7 +235,7 @@ class BrowserManager(QObject):
         )
 
     # ======================================================
-    # BUILD SEARCH URL
+    # SEARCH URL
     # ======================================================
 
     def build_search_url(
@@ -254,7 +284,10 @@ class BrowserManager(QObject):
             self.DEFAULT_SEARCH_ENGINE,
         )
 
-        if engine not in self.SEARCH_ENGINES:
+        if (
+            engine
+            not in self.SEARCH_ENGINES
+        ):
 
             return (
                 self.DEFAULT_SEARCH_ENGINE
@@ -292,24 +325,20 @@ class BrowserManager(QObject):
         text: str,
     ):
 
-        # Tekst ze spacjami traktujemy jako wyszukiwanie.
         if " " in text:
 
             return False
 
-        # localhost
         if text.startswith(
             "localhost"
         ):
 
             return True
 
-        # IP / port
         if ":" in text:
 
             return True
 
-        # Normalna domena
         if "." in text:
 
             return True

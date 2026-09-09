@@ -1,7 +1,17 @@
+from pathlib import Path
+
 from PySide6.QtCore import (
     QEvent,
+    QSettings,
     Qt,
     Signal,
+)
+
+from PySide6.QtGui import (
+    QColor,
+    QLinearGradient,
+    QPainter,
+    QPixmap,
 )
 
 from PySide6.QtWidgets import (
@@ -51,12 +61,364 @@ class NewTabPage(QWidget):
             ShortcutRepository()
         )
 
+        self.settings = QSettings(
+            "Veyra",
+            "VeyraBrowser",
+        )
+
+        self.background_mode = "theme"
+        self.background_path = ""
+
+        self.background_pixmap = None
+
         self.setObjectName(
             "NewTabPage"
         )
 
+        self._load_background()
+
         self._build_ui()
+
         self._load_shortcuts()
+
+    # ======================================================
+    # BACKGROUND SETTINGS
+    # ======================================================
+
+    def _load_background(
+        self,
+    ):
+
+        self.background_mode = (
+            self.settings.value(
+                "appearance/new_tab_background",
+                "theme",
+            )
+        )
+
+        self.background_path = (
+            self.settings.value(
+                "appearance/new_tab_background_path",
+                "",
+            )
+        )
+
+        self.background_pixmap = None
+
+        if (
+            self.background_mode
+            == "custom"
+            and self.background_path
+        ):
+
+            path = Path(
+                self.background_path
+            )
+
+            if path.exists():
+
+                pixmap = QPixmap(
+                    str(path)
+                )
+
+                if not pixmap.isNull():
+
+                    self.background_pixmap = (
+                        pixmap
+                    )
+
+    # ======================================================
+    # SHOW
+    # ======================================================
+
+    def showEvent(
+        self,
+        event,
+    ):
+
+        super().showEvent(
+            event
+        )
+
+        self._load_background()
+
+        self.update()
+
+    # ======================================================
+    # BACKGROUND
+    # ======================================================
+
+    def paintEvent(
+        self,
+        event,
+    ):
+
+        super().paintEvent(
+            event
+        )
+
+        if (
+            self.background_mode
+            == "theme"
+        ):
+
+            return
+
+        painter = QPainter(
+            self
+        )
+
+        painter.setRenderHint(
+            QPainter.RenderHint.SmoothPixmapTransform,
+            True,
+        )
+
+        rect = self.rect()
+
+        # ==================================================
+        # CUSTOM IMAGE
+        # ==================================================
+
+        if (
+            self.background_mode
+            == "custom"
+            and self.background_pixmap
+            is not None
+        ):
+
+            scaled = (
+                self.background_pixmap
+                .scaled(
+                    self.size(),
+                    Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+
+            source_x = max(
+                0,
+                (
+                    scaled.width()
+                    - self.width()
+                ) // 2,
+            )
+
+            source_y = max(
+                0,
+                (
+                    scaled.height()
+                    - self.height()
+                ) // 2,
+            )
+
+            source_width = min(
+                self.width(),
+                scaled.width(),
+            )
+
+            source_height = min(
+                self.height(),
+                scaled.height(),
+            )
+
+            painter.drawPixmap(
+                0,
+                0,
+                self.width(),
+                self.height(),
+                scaled,
+                source_x,
+                source_y,
+                source_width,
+                source_height,
+            )
+
+            # Lekko przyciemniamy całą tapetę,
+            # ale NIE robimy żadnego czarnego panelu
+            # pod centralnym UI.
+            painter.fillRect(
+                rect,
+                QColor(
+                    0,
+                    0,
+                    0,
+                    55,
+                ),
+            )
+
+            painter.end()
+
+            return
+
+        # ==================================================
+        # PURPLE
+        # ==================================================
+
+        if (
+            self.background_mode
+            == "purple"
+        ):
+
+            gradient = QLinearGradient(
+                0,
+                0,
+                self.width(),
+                self.height(),
+            )
+
+            gradient.setColorAt(
+                0.0,
+                QColor(
+                    "#161225"
+                ),
+            )
+
+            gradient.setColorAt(
+                0.45,
+                QColor(
+                    "#281848"
+                ),
+            )
+
+            gradient.setColorAt(
+                1.0,
+                QColor(
+                    "#10131d"
+                ),
+            )
+
+            painter.fillRect(
+                rect,
+                gradient,
+            )
+
+        # ==================================================
+        # OCEAN
+        # ==================================================
+
+        elif (
+            self.background_mode
+            == "ocean"
+        ):
+
+            gradient = QLinearGradient(
+                0,
+                0,
+                self.width(),
+                self.height(),
+            )
+
+            gradient.setColorAt(
+                0.0,
+                QColor(
+                    "#071a2b"
+                ),
+            )
+
+            gradient.setColorAt(
+                0.5,
+                QColor(
+                    "#0c3145"
+                ),
+            )
+
+            gradient.setColorAt(
+                1.0,
+                QColor(
+                    "#12152b"
+                ),
+            )
+
+            painter.fillRect(
+                rect,
+                gradient,
+            )
+
+        # ==================================================
+        # SUNSET
+        # ==================================================
+
+        elif (
+            self.background_mode
+            == "sunset"
+        ):
+
+            gradient = QLinearGradient(
+                0,
+                0,
+                self.width(),
+                self.height(),
+            )
+
+            gradient.setColorAt(
+                0.0,
+                QColor(
+                    "#35152f"
+                ),
+            )
+
+            gradient.setColorAt(
+                0.50,
+                QColor(
+                    "#6a2a3e"
+                ),
+            )
+
+            gradient.setColorAt(
+                1.0,
+                QColor(
+                    "#191728"
+                ),
+            )
+
+            painter.fillRect(
+                rect,
+                gradient,
+            )
+
+        # ==================================================
+        # FOREST
+        # ==================================================
+
+        elif (
+            self.background_mode
+            == "forest"
+        ):
+
+            gradient = QLinearGradient(
+                0,
+                0,
+                self.width(),
+                self.height(),
+            )
+
+            gradient.setColorAt(
+                0.0,
+                QColor(
+                    "#0b1e19"
+                ),
+            )
+
+            gradient.setColorAt(
+                0.48,
+                QColor(
+                    "#173b31"
+                ),
+            )
+
+            gradient.setColorAt(
+                1.0,
+                QColor(
+                    "#10191c"
+                ),
+            )
+
+            painter.fillRect(
+                rect,
+                gradient,
+            )
+
+        painter.end()
 
     # ======================================================
     # UI
@@ -89,18 +451,34 @@ class NewTabPage(QWidget):
         # CENTER
         # ==================================================
 
-        center = QWidget()
+        self.center = QWidget()
 
-        center.setObjectName(
+        self.center.setObjectName(
             "NewTabCenter"
         )
 
-        center.setMaximumWidth(
+        # WAŻNE:
+        # cały centralny kontener jest przezroczysty
+        self.center.setAttribute(
+            Qt.WidgetAttribute.WA_StyledBackground,
+            True,
+        )
+
+        self.center.setStyleSheet(
+            """
+            QWidget#NewTabCenter {
+                background: transparent;
+                border: none;
+            }
+            """
+        )
+
+        self.center.setMaximumWidth(
             760
         )
 
         center_layout = QVBoxLayout(
-            center
+            self.center
         )
 
         center_layout.setContentsMargins(
@@ -118,36 +496,54 @@ class NewTabPage(QWidget):
         # LOGO
         # ==================================================
 
-        logo = QLabel(
+        self.logo = QLabel(
             "Veyra"
         )
 
-        logo.setObjectName(
+        self.logo.setObjectName(
             "VeyraLogo"
         )
 
-        logo.setAlignment(
+        self.logo.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
-        center_layout.addWidget(
-            logo
+        self.logo.setStyleSheet(
+            """
+            background: transparent;
+            border: none;
+            """
         )
 
-        subtitle = QLabel(
+        center_layout.addWidget(
+            self.logo
+        )
+
+        # ==================================================
+        # SUBTITLE
+        # ==================================================
+
+        self.subtitle = QLabel(
             "Fast. Private. Yours."
         )
 
-        subtitle.setObjectName(
+        self.subtitle.setObjectName(
             "VeyraSubtitle"
         )
 
-        subtitle.setAlignment(
+        self.subtitle.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
+        self.subtitle.setStyleSheet(
+            """
+            background: transparent;
+            border: none;
+            """
+        )
+
         center_layout.addWidget(
-            subtitle
+            self.subtitle
         )
 
         # ==================================================
@@ -264,7 +660,7 @@ class NewTabPage(QWidget):
         )
 
         # ==================================================
-        # SHORTCUTS HEADER
+        # SHORTCUT HEADER
         # ==================================================
 
         shortcuts_header = QHBoxLayout()
@@ -276,16 +672,23 @@ class NewTabPage(QWidget):
             0,
         )
 
-        shortcuts_title = QLabel(
+        self.shortcuts_title = QLabel(
             "Shortcuts"
         )
 
-        shortcuts_title.setObjectName(
+        self.shortcuts_title.setObjectName(
             "ShortcutsTitle"
         )
 
+        self.shortcuts_title.setStyleSheet(
+            """
+            background: transparent;
+            border: none;
+            """
+        )
+
         shortcuts_header.addWidget(
-            shortcuts_title
+            self.shortcuts_title
         )
 
         shortcuts_header.addStretch()
@@ -295,7 +698,7 @@ class NewTabPage(QWidget):
         )
 
         # ==================================================
-        # SHORTCUT GRID
+        # SHORTCUTS
         # ==================================================
 
         self.grid = QGridLayout()
@@ -322,7 +725,7 @@ class NewTabPage(QWidget):
         # ==================================================
 
         main.addWidget(
-            center,
+            self.center,
             alignment=(
                 Qt.AlignmentFlag.AlignHCenter
             ),
@@ -333,7 +736,7 @@ class NewTabPage(QWidget):
         )
 
     # ======================================================
-    # SEARCH TEXT
+    # SEARCH
     # ======================================================
 
     def _search_text_edited(
@@ -345,10 +748,6 @@ class NewTabPage(QWidget):
             text
         )
 
-    # ======================================================
-    # SHOW SUGGESTIONS
-    # ======================================================
-
     def _show_suggestions(
         self,
     ):
@@ -359,10 +758,6 @@ class NewTabPage(QWidget):
         self.suggestions.show_below(
             self.search_frame
         )
-
-    # ======================================================
-    # SUGGESTION SELECTED
-    # ======================================================
 
     def _suggestion_selected(
         self,
@@ -386,10 +781,6 @@ class NewTabPage(QWidget):
         self.search_requested.emit(
             value
         )
-
-    # ======================================================
-    # SEARCH
-    # ======================================================
 
     def _submit_search(
         self,
@@ -438,10 +829,6 @@ class NewTabPage(QWidget):
                 event.key()
             )
 
-            # ==============================================
-            # DOWN
-            # ==============================================
-
             if (
                 key
                 == Qt.Key.Key_Down
@@ -458,10 +845,6 @@ class NewTabPage(QWidget):
 
                     return True
 
-            # ==============================================
-            # UP
-            # ==============================================
-
             if (
                 key
                 == Qt.Key.Key_Up
@@ -477,10 +860,6 @@ class NewTabPage(QWidget):
                     )
 
                     return True
-
-            # ==============================================
-            # ESC
-            # ==============================================
 
             if (
                 key
@@ -506,8 +885,10 @@ class NewTabPage(QWidget):
 
         while self.grid.count():
 
-            item = self.grid.takeAt(
-                0
+            item = (
+                self.grid.takeAt(
+                    0
+                )
             )
 
             widget = (
@@ -527,10 +908,6 @@ class NewTabPage(QWidget):
         shortcuts = (
             self.repository.get_all()
         )
-
-        # ==================================================
-        # DEFAULT SHORTCUTS
-        # ==================================================
 
         if not shortcuts:
 
@@ -562,10 +939,6 @@ class NewTabPage(QWidget):
             shortcuts = (
                 self.repository.get_all()
             )
-
-        # ==================================================
-        # NORMAL CARDS
-        # ==================================================
 
         position = 0
 
@@ -677,6 +1050,7 @@ class NewTabPage(QWidget):
             not name
             or not url
         ):
+
             return
 
         self.repository.add(
@@ -709,6 +1083,7 @@ class NewTabPage(QWidget):
                 current_id
                 != shortcut_id
             ):
+
                 continue
 
             dialog = ShortcutDialog(
@@ -728,6 +1103,7 @@ class NewTabPage(QWidget):
                 not new_name
                 or not new_url
             ):
+
                 return
 
             self.repository.update(

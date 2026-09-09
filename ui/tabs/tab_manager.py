@@ -1,6 +1,15 @@
+from PySide6.QtCore import (
+    QUrl,
+)
+
+from PySide6.QtGui import (
+    QIcon,
+)
+
 from PySide6.QtWebEngineCore import (
     QWebEngineNewWindowRequest,
 )
+
 from PySide6.QtWebEngineWidgets import (
     QWebEngineView,
 )
@@ -25,6 +34,26 @@ class TabManager:
         )
 
         self.parent = parent
+
+        # ==================================================
+        # TAB CONTEXT MENU
+        # ==================================================
+
+        self.tabs.tab_bar.duplicateRequested.connect(
+            self.duplicate_tab
+        )
+
+        self.tabs.tab_bar.closeOthersRequested.connect(
+            self.close_other_tabs
+        )
+
+        self.tabs.tab_bar.closeRightRequested.connect(
+            self.close_tabs_to_right
+        )
+
+        self.tabs.tab_bar.pinToggleRequested.connect(
+            self.toggle_pin
+        )
 
     # ======================================================
     # NEW TAB PAGE
@@ -59,6 +88,12 @@ class TabManager:
         index = self.tabs.addTab(
             page,
             "New Tab",
+        )
+
+        # New Tab nie ma favicony strony.
+        self.tabs.setTabIcon(
+            index,
+            QIcon(),
         )
 
         self.tabs.setCurrentIndex(
@@ -105,6 +140,13 @@ class TabManager:
             "New Tab",
         )
 
+        # Czyścimy ikonę, dopóki strona
+        # nie dostarczy własnej favicony.
+        self.tabs.setTabIcon(
+            index,
+            QIcon(),
+        )
+
         if activate:
 
             self.tabs.setCurrentIndex(
@@ -142,7 +184,7 @@ class TabManager:
         )
 
     # ======================================================
-    # NAVIGATE
+    # NAVIGATE WIDGET
     # ======================================================
 
     def navigate_widget(
@@ -167,6 +209,21 @@ class TabManager:
             QWebEngineView,
         ):
 
+            index = (
+                self.tabs.indexOf(
+                    widget
+                )
+            )
+
+            if index >= 0:
+
+                # Nie pokazujemy favicony poprzedniej
+                # strony podczas ładowania nowej.
+                self.tabs.setTabIcon(
+                    index,
+                    QIcon(),
+                )
+
             self.browser_manager.load_url(
                 widget,
                 text,
@@ -178,8 +235,10 @@ class TabManager:
         # INTERNAL PAGE -> WEBSITE
         # ==================================================
 
-        index = self.tabs.indexOf(
-            widget
+        index = (
+            self.tabs.indexOf(
+                widget
+            )
         )
 
         if index < 0:
@@ -190,13 +249,15 @@ class TabManager:
             is widget
         )
 
+        was_pinned = (
+            self.tabs.tab_bar.is_pinned(
+                index
+            )
+        )
+
         browser = (
             self.create_browser()
         )
-
-        # ----------------------------------------------
-        # Keep same tab position
-        # ----------------------------------------------
 
         self.tabs.removeTab(
             index
@@ -207,6 +268,18 @@ class TabManager:
             browser,
             "New Tab",
         )
+
+        self.tabs.setTabIcon(
+            index,
+            QIcon(),
+        )
+
+        if was_pinned:
+
+            self.tabs.tab_bar.set_pinned(
+                index,
+                True,
+            )
 
         if was_current:
 
@@ -230,6 +303,10 @@ class TabManager:
         browser,
     ):
 
+        # ==================================================
+        # TITLE
+        # ==================================================
+
         browser.titleChanged.connect(
             lambda title,
             browser=browser:
@@ -238,6 +315,10 @@ class TabManager:
                 title,
             )
         )
+
+        # ==================================================
+        # FAVICON
+        # ==================================================
 
         browser.iconChanged.connect(
             lambda icon,
@@ -248,9 +329,174 @@ class TabManager:
             )
         )
 
+        # ==================================================
+        # URL
+        # ==================================================
+
+        browser.urlChanged.connect(
+            lambda url,
+            browser=browser:
+            self._browser_url_changed(
+                browser,
+                url,
+            )
+        )
+
+        # ==================================================
+        # LOAD FINISHED
+        # ==================================================
+
+        browser.loadFinished.connect(
+            lambda success,
+            browser=browser:
+            self._load_finished(
+                browser,
+                success,
+            )
+        )
+
+        # ==================================================
+        # NEW WINDOWS / TABS
+        # ==================================================
+
         browser.page().newWindowRequested.connect(
             self._handle_new_window_request
         )
+
+    # ======================================================
+    # URL CHANGED
+    # ======================================================
+
+    def _browser_url_changed(
+        self,
+        browser,
+        url,
+    ):
+
+        index = (
+            self.tabs.indexOf(
+                browser
+            )
+        )
+
+        if index < 0:
+            return
+
+        # Przy zmianie strony usuwamy starą faviconę.
+        # Jeśli nowa strona ma ikonę, za chwilę
+        # przyjdzie browser.iconChanged.
+        self.tabs.setTabIcon(
+            index,
+            QIcon(),
+        )
+
+        # Jeśli tytułu jeszcze nie ma,
+        # pokazujemy domenę zamiast "New Tab".
+        if not browser.title():
+
+            fallback_title = (
+                self._title_from_url(
+                    url
+                )
+            )
+
+            if fallback_title:
+
+                self.tabs.setTabText(
+                    index,
+                    fallback_title[:28],
+                )
+
+    # ======================================================
+    # LOAD FINISHED
+    # ======================================================
+
+    def _load_finished(
+        self,
+        browser,
+        success,
+    ):
+
+        index = (
+            self.tabs.indexOf(
+                browser
+            )
+        )
+
+        if index < 0:
+            return
+
+        if not success:
+            return
+
+        # Czasami favicon jest już dostępna,
+        # ale iconChanged nie odpalił ponownie.
+        icon = (
+            browser.icon()
+        )
+
+        if (
+            icon is not None
+            and not icon.isNull()
+        ):
+
+            self.tabs.setTabIcon(
+                index,
+                icon,
+            )
+
+        # To samo robimy z tytułem.
+        title = (
+            browser.title()
+            .strip()
+        )
+
+        if title:
+
+            self.tabs.setTabText(
+                index,
+                title[:28],
+            )
+
+    # ======================================================
+    # FALLBACK TITLE
+    # ======================================================
+
+    def _title_from_url(
+        self,
+        url,
+    ):
+
+        if isinstance(
+            url,
+            QUrl,
+        ):
+
+            host = (
+                url.host()
+                .strip()
+            )
+
+        else:
+
+            host = (
+                QUrl(
+                    str(url)
+                )
+                .host()
+                .strip()
+            )
+
+        if not host:
+            return "New Tab"
+
+        if host.startswith(
+            "www."
+        ):
+
+            host = host[4:]
+
+        return host
 
     # ======================================================
     # NEW WINDOW
@@ -282,8 +528,10 @@ class TabManager:
             )
         )
 
-        browser = self.tabs.widget(
-            new_index
+        browser = (
+            self.tabs.widget(
+                new_index
+            )
         )
 
         request.openIn(
@@ -318,7 +566,110 @@ class TabManager:
         return None
 
     # ======================================================
-    # CLOSE
+    # DUPLICATE TAB
+    # ======================================================
+
+    def duplicate_tab(
+        self,
+        index,
+    ):
+
+        if (
+            index < 0
+            or index >= self.tabs.count()
+        ):
+
+            return
+
+        widget = (
+            self.tabs.widget(
+                index
+            )
+        )
+
+        # ==================================================
+        # WEB TAB
+        # ==================================================
+
+        if isinstance(
+            widget,
+            QWebEngineView,
+        ):
+
+            url = (
+                widget.url()
+                .toString()
+                .strip()
+            )
+
+            if not url:
+                return
+
+            original_icon = (
+                widget.icon()
+            )
+
+            new_index = (
+                self.create_browser_tab(
+                    url=url,
+                    activate=True,
+                )
+            )
+
+            # Pokaż faviconę od razu,
+            # zanim duplikat skończy ładowanie.
+            if (
+                original_icon is not None
+                and not original_icon.isNull()
+            ):
+
+                self.tabs.setTabIcon(
+                    new_index,
+                    original_icon,
+                )
+
+        # ==================================================
+        # NEW TAB
+        # ==================================================
+
+        elif isinstance(
+            widget,
+            NewTabPage,
+        ):
+
+            new_index = (
+                self.create_new_tab_page()
+            )
+
+        else:
+
+            return
+
+        # ==================================================
+        # MOVE NEXT TO ORIGINAL
+        # ==================================================
+
+        target_index = min(
+            index + 1,
+            self.tabs.count() - 1,
+        )
+
+        if (
+            new_index
+            != target_index
+        ):
+
+            self.tabs.tab_bar.moveTab(
+                new_index,
+                target_index,
+            )
+
+        self.tabs.setCurrentIndex(
+            target_index
+        )
+
+    # ======================================================
+    # CLOSE TAB
     # ======================================================
 
     def close_tab(
@@ -326,11 +677,17 @@ class TabManager:
         index,
     ):
 
-        if index < 0:
+        if (
+            index < 0
+            or index >= self.tabs.count()
+        ):
+
             return
 
-        widget = self.tabs.widget(
-            index
+        widget = (
+            self.tabs.widget(
+                index
+            )
         )
 
         self.tabs.removeTab(
@@ -341,9 +698,202 @@ class TabManager:
 
             widget.deleteLater()
 
-        if self.tabs.count() == 0:
+        if (
+            self.tabs.count()
+            == 0
+        ):
 
             self.create_new_tab_page()
+
+    # ======================================================
+    # CLOSE OTHER TABS
+    # ======================================================
+
+    def close_other_tabs(
+        self,
+        index,
+    ):
+
+        if (
+            index < 0
+            or index >= self.tabs.count()
+        ):
+
+            return
+
+        keep_widget = (
+            self.tabs.widget(
+                index
+            )
+        )
+
+        for current_index in range(
+            self.tabs.count() - 1,
+            -1,
+            -1,
+        ):
+
+            widget = (
+                self.tabs.widget(
+                    current_index
+                )
+            )
+
+            if (
+                widget
+                is keep_widget
+            ):
+
+                continue
+
+            self.close_tab(
+                current_index
+            )
+
+        new_index = (
+            self.tabs.indexOf(
+                keep_widget
+            )
+        )
+
+        if new_index >= 0:
+
+            self.tabs.setCurrentIndex(
+                new_index
+            )
+
+    # ======================================================
+    # CLOSE RIGHT
+    # ======================================================
+
+    def close_tabs_to_right(
+        self,
+        index,
+    ):
+
+        if (
+            index < 0
+            or index >= self.tabs.count()
+        ):
+
+            return
+
+        keep_widget = (
+            self.tabs.widget(
+                index
+            )
+        )
+
+        for current_index in range(
+            self.tabs.count() - 1,
+            index,
+            -1,
+        ):
+
+            self.close_tab(
+                current_index
+            )
+
+        new_index = (
+            self.tabs.indexOf(
+                keep_widget
+            )
+        )
+
+        if new_index >= 0:
+
+            self.tabs.setCurrentIndex(
+                new_index
+            )
+
+    # ======================================================
+    # PIN / UNPIN
+    # ======================================================
+
+    def toggle_pin(
+        self,
+        index,
+    ):
+
+        if (
+            index < 0
+            or index >= self.tabs.count()
+        ):
+
+            return
+
+        tab_bar = (
+            self.tabs.tab_bar
+        )
+
+        widget = (
+            self.tabs.widget(
+                index
+            )
+        )
+
+        pinned = (
+            tab_bar.is_pinned(
+                index
+            )
+        )
+
+        # ==================================================
+        # UNPIN
+        # ==================================================
+
+        if pinned:
+
+            tab_bar.set_pinned(
+                index,
+                False,
+            )
+
+            return
+
+        # ==================================================
+        # PIN
+        # ==================================================
+
+        pinned_count = 0
+
+        for current_index in range(
+            self.tabs.count()
+        ):
+
+            if tab_bar.is_pinned(
+                current_index
+            ):
+
+                pinned_count += 1
+
+        if (
+            index
+            != pinned_count
+        ):
+
+            tab_bar.moveTab(
+                index,
+                pinned_count,
+            )
+
+        new_index = (
+            self.tabs.indexOf(
+                widget
+            )
+        )
+
+        if new_index < 0:
+            return
+
+        tab_bar.set_pinned(
+            new_index,
+            True,
+        )
+
+        self.tabs.setCurrentIndex(
+            new_index
+        )
 
     # ======================================================
     # TITLE
@@ -355,16 +905,27 @@ class TabManager:
         title,
     ):
 
-        index = self.tabs.indexOf(
-            browser
+        index = (
+            self.tabs.indexOf(
+                browser
+            )
         )
 
         if index < 0:
             return
 
+        title = (
+            str(title)
+            .strip()
+        )
+
         if not title:
 
-            title = "New Tab"
+            title = (
+                self._title_from_url(
+                    browser.url()
+                )
+            )
 
         self.tabs.setTabText(
             index,
@@ -372,7 +933,7 @@ class TabManager:
         )
 
     # ======================================================
-    # ICON
+    # FAVICON
     # ======================================================
 
     def _update_icon(
@@ -381,14 +942,20 @@ class TabManager:
         icon,
     ):
 
-        index = self.tabs.indexOf(
-            browser
+        index = (
+            self.tabs.indexOf(
+                browser
+            )
         )
 
         if index < 0:
             return
 
-        if icon.isNull():
+        if (
+            icon is None
+            or icon.isNull()
+        ):
+
             return
 
         self.tabs.setTabIcon(
